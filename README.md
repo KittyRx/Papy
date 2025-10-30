@@ -22,6 +22,8 @@ Papy is an open-source framework that lets us rapidly generate a large quantity 
 
 Papy is an open-source command line tool API load testing tool that is meant to be light weight, fast, and flexible.
 
+---
+
 ### Key Features
 Some of the key features include:
 - Customized targetting (server address and endpoint)
@@ -40,9 +42,9 @@ The project has 3 main dependencies that were vendored into the project. As of t
 - httplib.h version 0.18.1
 - OpenSSL version 3.4.0 
 
----
-
 ## Getting Started
+
+---
 
 ### Installation
 The following is a step-by-step set of instructions for installing or accessing Papy.
@@ -132,8 +134,6 @@ The following is an example of me testing the database of a locally deployed web
 ![M-Track databse after Papy](docs/documentationImages/postPapy.png "M-Track databse after Papy")
 
 
----
-
 ## User Interface 
 Since this was designed to be simple as well as a Command Line Interface tool the UI follows this paradigm. You can see the UI information of Papy with any execution of the Papy command like:
 ```bash
@@ -195,7 +195,7 @@ If `lol` is set then it will generate a custom pseudo-random payload.
 
 If a file path is specified then Papy will look for a JSON file and parse it. That parsed JSON will then be used as a body for the payload.
 
----
+ 
 
 ## Disclaimer
 - DO NOT USE THIS FOR MALICIOUS PURPOSES
@@ -306,7 +306,7 @@ Game Name + Tag: bsawatestuser#test
 			- POST Request
 			- Randomized Generated Match using `matchBuilder`
 
-### Benchmarking
+## Benchmarking tools
 Before anything you will need the perf tool `git clone --depth 1 https://github.com/brendangregg/perf-tools`.
 And the FlameGraph tool, from Brendan as well `git clone https://github.com/brendangregg/FlameGraph.git`
 
@@ -318,7 +318,7 @@ If you are working with WSL you might also need to:
 5. And lastly `/usr/local/bin/perf --version` to check you got what you needed, otherwise perf might not run.
 
 
-#### Method 1
+#### Actual benchmark
 ```bash
 perf record -F 99 -g -- ./bin/papy --threads 16 --endpoint "/printJson" --target "http://localhost" --payload lol --count 600
 ```
