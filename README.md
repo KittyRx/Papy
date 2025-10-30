@@ -307,29 +307,24 @@ Game Name + Tag: bsawatestuser#test
 			- Randomized Generated Match using `matchBuilder`
 
 ### Benchmarking
+Before anything you will need the perf tool `git clone --depth 1 https://github.com/brendangregg/perf-tools`.
+And the FlameGraph tool, from Brendan as well `git clone https://github.com/brendangregg/FlameGraph.git`
+
+If you are working with WSL you might also need to:
+1. `git clone --depth 1 https://github.com/microsoft/WSL2-Linux-Kernel`
+2. `cd WSL2-Linux-Kernel/tools/perf`
+3. `make -j$(nproc)`
+4. `sudo cp perf /usr/local/bin/`
+5. And lastly `/usr/local/bin/perf --version` to check you got what you needed, otherwise perf might not run.
+
 
 #### Method 1
 ```bash
-Timeout 100s sudo perf record -F 99 -g -- ./bin/papy --threads 16 --endpoint "/printJson" --target "http://localhost" --payload lol
+perf record -F 99 -g -- ./bin/papy --threads 16 --endpoint "/printJson" --target "http://localhost" --payload lol --count 600
 ```
 
 ```bash
-cd ~/Documents/devenv/perfTest/FlameGraph
-cp ~/Documents/devenv/Papy/perf.data ./
 perf script > out.perf
 ./stackcollapse-perf.pl out.perf > out.folded
 ./flamegraph.pl out.folded > flamegraph.svg
-```
-
-
-#### Method 2
-```bash
-./bin/papy --threads 16 --endpoint "/printJson" --target "http://127.0.0.1" --payload lol
-```
-
-```bash
-perf record -F 99 -p 5824 -g -- sleep 60
-perf script > out.perf
-./stackcollapse-perf.pl out.perf > out.folded
-./flamegraph.pl out.folded > kernel.svg
 ```
