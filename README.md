@@ -197,11 +197,6 @@ If a file path is specified then Papy will look for a JSON file and parse it. Th
 
 ---
 
-## Documentation
-The [User Documentation](docs/userDocumentation.md) and [Developer Documentation](docs/developerDocumentation.md) can provide further information on different aspects of Papy.
-
----
-
 ## Disclaimer
 - DO NOT USE THIS FOR MALICIOUS PURPOSES
 - GET PERMISSION FROM THE OWNER OF RESOURCES YOU WILL USE THIS TOOL AGAINST

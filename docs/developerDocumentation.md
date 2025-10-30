@@ -1,13 +1,8 @@
 # Developer Documentation
 
 ## Table of Contents
-1. [Introduction](#introduction)
-2. [High Level Architecture](#high-level-architecture)
-3. [Project File Structure](#project-file-structure)
-
-## Introduction
-
-The purpsoe of the developer documentation primarily is to give the user insight into the mind of the developer (MEEEE) as to why I made the decisions I made while designing Papy. The developer documentation will not go over the content that was covered in the user documentation such as startup and usage instructions.
+1. [High Level Architecture](#high-level-architecture)
+2. [Project File Structure](#project-file-structure)
 
 ## High Level Architecture
 
@@ -19,11 +14,9 @@ Things of note in the header files are `httplib.h`, `json.hpp`, `openssl`, and t
 
 - `httplib.h` & `json.hpp`: These are two libraries that a being imported for use in the project and all of their functionality is within these header files themselves.
 - `openssl`: Is another library that has a bunch of dependancy files associated with it. Its main use is for handling HTTPS connections so we can handle HTTPS as well as HTTP traffic. Its main connection is within the `apiClient.hpp` file.
-- `mapping.hpp`: This is a very important file. This file contains all of the JSON objects that are used in mapping/creating random fields during payload generation. There are just a bunch of `const std::string` values in there that are later parsed as JSON and processed to produce a particular request.
+- `mapping.hpp`: This is a very important file. This file contains all of the structs that are used in mapping/creating random fields during payload generation.
 
 ![mapping.hpp contents](documentationImages/mapping.png "mapping.hpp contents")
-
-Regarding the build process, since the project is relatively simple I did not need any complicated build systems so I used a makefile to make sure that the variables and environmental factors are consistent across builds. I will not bother putting the whole `makefile` here so I will just mention notable portions of it. 
 
 - The project is currently being built with `-std=c++23`
 - In the build flags we specify `-I$(OPENSSL_DIR)/include` which will include all of the openssl files in our `src/dependencies/openssl/` directory which are necessary for HTTPS traffic and will be added to the build.  
