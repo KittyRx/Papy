@@ -8,23 +8,6 @@ Papy is an open-source framework that lets us rapidly generate a large quantity 
 
 ![Example Papy POST](docs/documentationImages/papyLOL.gif "Example Papy POST")
 
-Why is it that other projects:
-- Don't have a simple build process
-- Don't have a light weight footprint
-- Don't have an easily portable and self contained codebase
-- Cant send HTTPS AND HTTP traffic
-- Cant send GET AND POST requests
-- Can not simply perform all of the following tasks in one application:
-	- Health check services
-	- Bulk create and send data to network connected services
-	- Load test back-end business logic and attached databases
-
-Well with Papy we can do ALL OF THAT!!!
-
-Lets get into how we do this...
-
-
-
 ## Table of Contents
 1. [Introduction](#introduction)
 2. [Getting Started](#getting-started)
@@ -51,13 +34,6 @@ Some of the key features include:
   - Spike traffic
   - Ramp traffic
   - Rate limited traffic
-
-
-### Target Audience
-If you are a user familiar with a CLI then you can use this tool! It was intentionally developed to be: 
-- Simple to use
-- Easy to integrate with other tooling
-- Light weight
 
 ### Dependencies
 The project has 3 main dependencies that were vendored into the project. As of the current implementation they are: 
@@ -144,7 +120,7 @@ The contents of `testPayload.json` are as follows:
 ![Papy Payload](docs/documentationImages/papyPayload.gif "Papy Payload")
 > **Note:** The bottom terminal is a locally deployed web application that prints the body of its received POST requests for demonstration purposes. As you can see the payload that is being sent is the same payload that is being received by the Python web server.
 
-The following is an example of me testing the database of a locally deployed web application I created called [M-Track](https://github.com/noahpop77/M-Track). This execution run will use the randomized payload generation for League of Legends. The lol payload will trigger a class in the tool to generate a randomized League of Legends match file and send that to the API endpoint of [M-Track](https://github.com/noahpop77/M-Track).
+The following is an example of me testing the database of a locally deployed web application I created called [M-Track](https://github.com/noahpop77/M-Track). This execution run will use the randomized payload generation for League of Legends. The lol payload will be a randomized League of Legends match file and send that to the API endpoint of [M-Track](https://github.com/noahpop77/M-Track).
 ```bash
 ./papy --threads 4 --target "http://10.0.0.7" --endpoint "/addMatch" --payload lol
 ```
@@ -160,7 +136,7 @@ The following is an example of me testing the database of a locally deployed web
 ---
 
 ## User Interface 
-Since this was designed to be simple as well as a Command Line Interface tool the UI follows this paradigm. You can see the UI information of Papy with any exeuction of the Papy command like:
+Since this was designed to be simple as well as a Command Line Interface tool the UI follows this paradigm. You can see the UI information of Papy with any execution of the Papy command like:
 ```bash
 ./papy [Flag] {Value} [Flag] {Value} [Flag] {Value} ...
 ```
@@ -211,15 +187,12 @@ This flag lets you specify test a ramping simulation. The traffic will have a de
 This is where a good amount of the meat of the functionality is. Depending on the payload that you set you will have behavior vary drastically. At the moment there are 4 main operating modes:
 - No payload
 - `lol`
-- `ocean`
 - `{filepath}`
   - ex. `./home/jsonFiles/bob.json`
 
 If no payload is set then Papy will send GET requests to the specified address and endpoint.
 
 If `lol` is set then it will generate a custom pseudo-random payload based off the specifications in a custom class. 
-
-If `ocean` is set then it will generate a custom pseudo-random payload based off the specifications in a custom class.
 
 If a file path is specified then Papy will look for a JSON file and parse it. That parsed JSON will then be used as a body for the payload.
 
@@ -346,7 +319,6 @@ Game Name + Tag: bsawatestuser#test
 	- Get requests primary
 	- Flags for specific custom payload contexts
 		- League
-		- Ocean
 	- `./papy --threads 4 --target "http://10.0.0.7" --endpoint "/addMatch"`
 		- **Behavior:**  
 			- GET Request
@@ -360,10 +332,6 @@ Game Name + Tag: bsawatestuser#test
 		- **Behavior:** 
 			- POST Request
 			- Randomized Generated Match using `matchBuilder`
-	- `./papy --threads 4 --target "http://10.0.0.7" --endpoint "/addMatch" --payload ocean`
-		- **Behavior:** 
-			- POST Request
-			- Randomized Generated Match using `oceanBuilder`
 
 - Is payloadBuilder doing anything? Remove it if not. Was just testing out stuff
 	- Its been archived
@@ -522,10 +490,6 @@ MT19337 vs default_random_engine, minstd_random
 Tips from DemiTastes on theo disc
 - README Examples of randomized data sent to mtrack
 
-- Add AWS CloudWatch connection to ocean plugin for convenient metrics tracking
-	- Configured in ocean plugin `.env` file
-
-
 Next steps:
 
 - Make the sending part of the net code better
@@ -556,7 +520,7 @@ Little present if you read all the way to the end:
 
 #### Method 1
 ```bash
-Timeout 100s sudo perf record -F 99 -g -- ./bin/papy --threads 16 --endpoint "/printJson" --target "http://localhost" --payload ocean
+Timeout 100s sudo perf record -F 99 -g -- ./bin/papy --threads 16 --endpoint "/printJson" --target "http://localhost" --payload lol
 ```
 
 ```bash
@@ -570,7 +534,7 @@ perf script > out.perf
 
 #### Method 2
 ```bash
-./bin/papy --threads 16 --endpoint "/printJson" --target "http://127.0.0.1" --payload ocean
+./bin/papy --threads 16 --endpoint "/printJson" --target "http://127.0.0.1" --payload lol
 ```
 
 ```bash

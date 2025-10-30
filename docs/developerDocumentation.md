@@ -38,12 +38,10 @@ Papy/
 |   |-- main.cpp
 |   |-- apiClient.cpp
 |   |-- matchBuilder.cpp
-|   |-- oceanBuilder.cpp
 |   |-- threadWorks.cpp
 |   |-- utilities.cpp
 |   |-- apiClient.hpp
 |   |-- matchBuilder.hpp
-|   |-- oceanBuilder.hpp
 |   |-- threadWorks.hpp
 |   |-- utilities.hpp
 |   |-- json.hpp

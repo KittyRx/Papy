@@ -96,8 +96,7 @@ void cliHelper::displayHelp() {
               << "  -b, --bearer [token]      Bearer token for Authorization header\n"
               << "  -a, --authorization [token] Basic token for Authorization header\n"
               << "\nExample: \n"
-              << "./papy --threads 4 --target \"http://127.0.0.1\" --endpoint \"/printJson\" "
-                 "--payload ocean.json --verbose --rate 2000 --ramp 500 --spike 300 --bearer myToken\n";
+              << "./papy --threads 4 --target \"http://127.0.0.1\" --endpoint \"/printJson\" ";
 }
 
 bool cliHelper::isValidInt(double num) {

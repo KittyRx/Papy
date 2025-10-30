@@ -176,15 +176,12 @@ This flag lets you specify test a ramping simulation. The traffic will have a de
 This is where a good amount of the meat of the functionality is. Depending on the payload that you set you will have behavior vary drastically. At the moment there are 4 main operating modes:
 - No payload
 - `lol`
-- `ocean`
 - `{filepath}`
   - ex. `./home/jsonFiles/bob.json`
 
 If no payload is set then Papy will send GET requests to the specified address and endpoint.
 
 If `lol` is set then it will generate a custom pseudo-random payload based off the specifications in a custom class. 
-
-If `ocean` is set then it will generate a custom pseudo-random payload based off the specifications in a custom class.
 
 If a file path is specified then Papy will look for a JSON file and parse it. That parsed JSON will then be used as a body for the payload.
 

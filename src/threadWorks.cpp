@@ -15,7 +15,6 @@
 #include "matchBuilder.hpp"
 #include "millisecondClock.hpp"
 #include "myRandom.hpp"
-#include "oceanBuilder.hpp"
 #include "configPayload.hpp"
 #include "threadWorks.hpp"
 
@@ -81,9 +80,6 @@ void threadWorks::sendRequest(apiClient& client, bool verbose, std::string paylo
         nlohmann::json lolPayload = matchBuilder::randomMatch();
         std::string compressedLolPayload = gzip_compress(lolPayload.dump());
         client.setPayload(compressedLolPayload);
-        response = client.sendPOSTRequest(bearer, authorization);
-    } else if (payload == "ocean") {
-        client.setPayload(oceanBuilder::randomOcean().dump());
         response = client.sendPOSTRequest(bearer, authorization);
     } else if (payload == "payload.json") {
         client.setPayload(configPayload::readConfig().dump());
