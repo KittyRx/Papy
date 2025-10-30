@@ -184,7 +184,7 @@ This flag lets you specify a "spike" time. What happens is that whatever delay i
 This flag lets you specify test a ramping simulation. The traffic will have a delay of the one you set for the `--ramp` flag and then get halved each time a payload is sent. It will ramp faster and faster until it runs at the max speed capable of your hardware.
 
 ### --payload [num]
-This is where a good amount of the meat of the functionality is. Depending on the payload that you set you will have behavior vary drastically. At the moment there are 4 main operating modes:
+This is where a good amount of the functionality is. Depending on the payload that you set you will have behavior vary drastically. At the moment there are 3 main operating modes:
 - No payload
 - `lol`
 - `{filepath}`
@@ -192,7 +192,7 @@ This is where a good amount of the meat of the functionality is. Depending on th
 
 If no payload is set then Papy will send GET requests to the specified address and endpoint.
 
-If `lol` is set then it will generate a custom pseudo-random payload based off the specifications in a custom class. 
+If `lol` is set then it will generate a custom pseudo-random payload. 
 
 If a file path is specified then Papy will look for a JSON file and parse it. That parsed JSON will then be used as a body for the payload.
 
@@ -203,21 +203,8 @@ The [User Documentation](docs/userDocumentation.md) and [Developer Documentation
 
 ---
 
-## Ask The Dev
-For questions you can contact me on LinkedIn or my email. If you have any recommendations maybe even make a PR. Im open to any feedback!
-
-All contact information is listed on my profile.
-
----
-
-### Name Meaning
-
-This section is completely for fun. I named the project based off the latin word papyrus for paper. I figured that paper is what contains much of humanities knowledge and it is also where people go to obtain new knowledge from others. So the link between that and a project that generates a ton of information was not a far leap for me in my mind.
-
----
-
 ## Disclaimer
-- PLEASE DO NOT USE THIS FOR MALICIOUS PURPOSES
+- DO NOT USE THIS FOR MALICIOUS PURPOSES
 - GET PERMISSION FROM THE OWNER OF RESOURCES YOU WILL USE THIS TOOL AGAINST
 - I TAKE NO RESPONSIBILITY FOR THE ACTIONS OF USERS OF THIS APPLICATION
 
@@ -225,11 +212,10 @@ This section is completely for fun. I named the project based off the latin word
 
 ## Contributing
 
-If you would like to contribute to this project it is quite easy (I may be biased since it is my project). Follow the [Getting Started](#getting-started) section and that will get you up and running. 
+If you would like to contribute to this project follow the [Getting Started](#getting-started) section and that will get you up and running. 
 
-Regarding actually contributing code, please fork the repository and open a pull request to the `main` branch. I will review it as soon as I can.
+Regarding actually contributing code, please fork the repository and open a pull request to the `main` branch.
 
-My Practices:
 - Naming Variables:
 	- I use camel case for all variable and class names. 
 - Structure:
@@ -307,13 +293,6 @@ cd bin
 Game Name + Tag: bsawatestuser#test
 
 ### Recent Changes:
-- Rebuilt the header structure for the application
-- Investigated Coroutines
-- Implemented test makefile
-	- Build works but only if you run the papy exe from within the bin directory right next to the mappign files.
-- Payload can be run from anywhere, Mappings are embedded into the built executable
-
-- I WANT TO EMBED THE JSON MAPPING FILES INTO THE EXECUTABLE SO THE THING IS ALMIGHTY PORTABLE
 
 - Added a proper way of swapping between operating modes
 	- Get requests primary
@@ -332,189 +311,6 @@ Game Name + Tag: bsawatestuser#test
 		- **Behavior:** 
 			- POST Request
 			- Randomized Generated Match using `matchBuilder`
-
-- Is payloadBuilder doing anything? Remove it if not. Was just testing out stuff
-	- Its been archived
-
-- Work on enabling a simplified system of configuring payload
-	- Create a sample payload for use to another API
-	- Payload option is configured to:
-		- Take in a filepath
-		- Read in the file contents
-		- Return the contents as JSON
-
-- Wrote comprehensive documentation
-	- User documentation
-	- Developer documentation
-	- Gathered gifs and pictures for documentation
-	- Write documents in markdown in the docs directory
-
-- Binary size was reduced from 3.6MB to 2.9MB. This was done by cleaning up includes(some more is still required), and trimming down mapping json objects.
-
-- Simplify the JSON parsing for items to be a single parse pulling 6 random items rather than 6 different parses in getRandomFromJson()
-
-
-### Performance Increases
-- Went from 110 to 170 by adding GZIP encoding and running gzip_compress method on payload before running set-payload reducing size (18kb to 2.3kb packet sizes)   
-```cpp
-std::string threadWorks::gzip_compress(const std::string &data)
-
-//Ex.
-nlohmann::json lolPayload = matchBuilder::randomMatch();
-std::string compressedLolPayload = gzip_compress(lolPayload.dump());
-client.setPayload(compressedLolPayload);
-response = client.sendPOSTRequest();
-```
-- Went from 170 to 360 with removing recreation of random device per call of generateRandomInt
-```cpp
-// Constructor to initialize the random number generator with a seed
-std::random_device myRandom::rd;
-std::mt19937 myRandom::gen(myRandom::rd());
-
-int myRandom::generateRandomInt(int min, int max) {
-    std::uniform_int_distribution<> distrib(min, max);
-    return distrib(gen);
-    
-}
-```
-
-- Went from 360 to 400 with pulling 70 items per match in a single parse rather than parsing IEMS_JSON 70 times a match
-```cpp
-std::vector<std::string> participantItems = getRandomVectorFromJSON(mapping::ITEMS_JSON, 70);
-```
-
-- Went from 400 to 830 by batch parsing CHAMPIONS_JSON SUMMMONERS_JSON KEYSTONES_JSON SECONDARY_RUNES_JSON using:
-```cpp
-std::vector<std::string> participantChamp = getRandomVectorFromJSON(mapping::CHAMPIONS_JSON, 10);
-
-std::vector<std::string> participantSummoners = getRandomVectorFromJSON(mapping::SUMMMONERS_JSON, 20);
-
-std::vector<std::string> participantKeystone = getRandomVectorFromJSON(mapping::KEYSTONES_JSON, 10);
-
-std::vector<std::string> participantSecondary = getRandomVectorFromJSON(mapping::SECONDARY_RUNES_JSON, 10);
-```
-
-- Went from 830 to 870 by making the mapping objects natively of type nlohman::json rather than strings that get parsed per program loop execution
-```cpp
-nlohmann::json KEYSTONES_JSON;
-nlohmann::json SECONDARY_RUNES_JSON;
-nlohmann::json SUMMMONERS_JSON;
-nlohmann::json ITEMS_JSON;
-nlohmann::json CHAMPIONS_JSON;
-```
-
-- Went from 870 to 905~ by doing the same for the MATCH_TEMPLATE_JSON that each game is built off of
-```cpp
-nlohmann::json MATCH_TEMPLATE_JSON;
-```
-
-- Went from 900 to 2400 by removing the random_devices from each call of generateRandomNumberString, generateRandomString, and getRandomBool.
-
-```cpp
-std::random_device myRandom::rd;
-std::mt19937 myRandom::gen(myRandom::rd());
-```
-
-- Went from 2400 to 3000 by making the strings containing the set of characters the random device will pull from a char array and constant to the compiler (constexpr). Also made the size of the char array a constexpr so that we do not need to compute it repeatedly.
-
-```cpp
-constexpr char chars[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-constexpr size_t chars_len = sizeof(chars) - 1;
-
-std::uniform_int_distribution<> distrib(0, chars_len - 1);
-std::string randomStr;
-for (size_t i = 0; i < length; ++i) {
-	randomStr += chars[distrib(gen)];
-}
-return randomStr;
-```
-
-- Went from 3000 to 3300 by reserving the bits for the string that gets generated at the time the function is called so no resizing is required. Also made `std::uniform_int_distribution` static. It did not need to be remade every execution.
-```cpp
-constexpr char chars[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-constexpr size_t chars_len = sizeof(chars) - 1;
-
-static std::uniform_int_distribution<> distrib(0, chars_len - 1);
-std::string randomStr;
-randomStr.reserve(length);
-for (size_t i = 0; i < length; ++i) {
-	randomStr += chars[distrib(gen)];
-}
-return randomStr;
-```
-
-- Went from 3.3k to 6k by removing the local random device in the matchBuilder::getRandomVectorFromJSON method and moved  getRandomVectorFromJSON to myRandom for stability and performance by using only a single random device.
-
-- Went from 6k to 8k by removing declarations and copies of unnecessary vectors. Inside of the getRandomVectorFromJSON there was a vector that was used to append the requested random items from the JSON object and returned. This method resulted in an unnecessary declaration and copy. Passed original vector by reference and removed unnecessary copy and declaration of useless vector. Directly editing OG vector. 
-
-```cpp
-std::vector<std::string> participantItems;
-participantItems = myRandom::getRandomVectorFromJSON(mapping::ITEMS_JSON, 70);
-
-std::vector<std::string> participantItems;
-myRandom::getRandomVectorFromJSON(participantItems, mapping::ITEMS_JSON, 70);
-```
-
-- WE ARE GETTING A LOT OF SEG FAULTS AT 8K
-- Went from 8k to 7.6k The seg faults were caused by the global random device generator experiencing a race condition(The program was so slow up until now it didnt experience it, we hit real speeds and it experienced a race condition more often). Each thread was given its own local random device and generator. 
-
-- SO CLOSEEEE
-
-- It was at this point I took another look at `htop` while the program was running. CPU cores locked at 60% under full load, why? We were now getting limited by the TERMINAL. Since the terminal metrics line writes once per requests and we were now able to toss out 7.6k per second, we were actually experiencing more blocking operations while we waited to write to the screen and wasted time when we could be sending requests. That and with all of the efficiencies we added, turns out our limation was that we can send out requests so much faster and we were waiting for responses on my standard 16 threads testing command. So we could turn the core count up... by a lot...
-
-```cpp
-std::cout 	<< "\rTotal Sent: " << totalPayloadsSent
-			<< " | Successful: " << totalPayloadsSuccessful
-			<< " | Failed: " << (totalPayloadsSent - totalPayloadsSuccessful)
-			<< " | Packets/s: " << packetsPerSecond
-			<< " | Elapsed Time: " << clock.elapsedMilliseconds()
-		  	<< "     "  // clear a few characters past the end
-            << std::flush;
-```
-
-- Went from 7.6k 20k Up until now we were using blinders basically. This is also the part of the journey where we realise that running the Papy client, the GO endpoint and the PostgreSQL database on the same box is causing unintended performance issues for the non papy services LOL. HOWEVER even with this in mind. We can still reach 12k requests per second to the box. Even though all CPU cores are at 100% cause of the Papy client.
-
-
-
-### Decisions
-
-MT19337 vs default_random_engine, minstd_random
-
-
-
-### Todo:
-
-- Create make based github actions to auto compile per commit
-- Investigate only having one participant in template and expanding the template with code at runtime
-
-Tips from DemiTastes on theo disc
-- README Examples of randomized data sent to mtrack
-
-Next steps:
-
-- Make the sending part of the net code better
-- Read about core-mapping if you dig into the caches and from there you will understand why crossing what you have in your CPU called DIE does for net code
-- Reading about core mapping to deal with inefficient cache use would be a good idea
-
-- Some parallelization can be done
-	- Batching area probably (depending on how much data you are working with)
-	- Same with the generators
-
-```
-Useful GDB commands:
-
-info threads
-thread #
-bt
-```
-
-Little present if you read all the way to the end:
-
-<div align="center">
-    <img src="https://static.wikia.nocookie.net/sans-nagito/images/1/12/Papyrus.png/revision/latest?cb=20200609055655" alt="AutoGen Logo" width="100">
-</div>
-
-
 
 ### Benchmarking
 
