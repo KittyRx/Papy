@@ -345,6 +345,7 @@ perf script > out.perf
 ```
 Assuming you are inside `Papy/src` directory point both the `stack` and `flamegraph` files to the `FlameGraph` directory.
 
+---
 
 ## ***Disclaimer***
 - **DO NOT USE THIS FOR MALICIOUS PURPOSES**
