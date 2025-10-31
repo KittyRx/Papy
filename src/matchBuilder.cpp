@@ -1,104 +1,190 @@
-#include "matchBuilder.hpp"
-
-#include <string>
 #include <iostream>
-#include "dependencies/json.hpp"
+#include <string>
+#include <chrono>
+#include <cstdint>
 
-#include "mapping.hpp"
+#include "matchBuilder.hpp"
 #include "myRandom.hpp"
+#include "mapping.hpp"
 
-using json = nlohmann::json;
+using mapping::Match;
 
-json matchBuilder::randomMatch() {
-    json matchTemplate = mapping::MATCH_TEMPLATE_JSON;
+mapping::Match matchBuilder::randomMatch()
+{
+    mapping::Match matchTemplate;
 
-    matchTemplate["info"]["gameCreation"] = 9466848;
-    matchTemplate["info"]["gameDuration"] = myRandom::generateRandomInt(900, 2700);
-    matchTemplate["info"]["gameEndTimestamp"] = 9466848;
-    matchTemplate["info"]["gameStartTimestamp"] = 9466848;
+    // Taking the time stamp of today in ms;
+    long long timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    // And passing it as data for game start and creation ( for realism since server won't receive post requests for yesterday's or tomorrow's matches );
+    matchTemplate.info.gameCreation = timestamp_ms;
+    matchTemplate.info.gameStartTimestamp = timestamp_ms;
+    matchTemplate.info.gameDuration = (600, 3000); // seconds
+    matchTemplate.info.gameEndTimestamp = timestamp_ms + matchTemplate.info.gameDuration * 1000;
 
-    matchTemplate["metadata"]["matchId"] = "TEST1_" + myRandom::generateRandomNumberString(10);
+    matchTemplate.metadata.matchId = "TEST1_" + myRandom::generateRandomNumberString(10);
 
     // Randomly determine win/loss for the different teams
     bool firstSetWin = myRandom::getRandomBool();
     bool secondSetWin = !firstSetWin;
-    int participantIndex = 0;
-    for (json& participant : matchTemplate["info"]["participants"]) {
-        if (participantIndex < 5) {
-            participant["win"] = firstSetWin;
-        } else {
-            participant["win"] = secondSetWin;
-        }
-        participantIndex++;
-    }
 
     // Used in assigning the first user to bsawatestuser#test
     bool isFirstIteration = true;
 
-    // Batch fetching random values to save on runtime massively
-    std::vector<std::string> participantItems;
-    myRandom::getRandomVectorFromJSON(participantItems, mapping::ITEMS_JSON, 70);
+    // Create a team state so as TeamADeaths = TeamBKills and viceversa;
+    int totalDeathsA = myRandom::generateRandomInt(5, 30);
+    int totalDeathsB = myRandom::generateRandomInt(5, 30);
 
-    std::vector<std::string> participantChamp;
-    myRandom::getRandomVectorFromJSON(participantChamp, mapping::CHAMPIONS_JSON, 10);
+    // Then assign total kills;
+    int totalKillsA = totalDeathsB;
+    int totalKillsB = totalDeathsA;
 
-    std::vector<std::string> participantSummoners;
-    myRandom::getRandomVectorFromJSON(participantSummoners, mapping::SUMMMONERS_JSON, 20);
+    // Limit number of camps per 45 mins at perfect clear.
+    int totalJungleCamps = 120;
 
-    std::vector<std::string> participantKeystone;
-    myRandom::getRandomVectorFromJSON(participantKeystone, mapping::KEYSTONES_JSON, 10);
+    int participantIndex = 0;
+    for (auto &participant : matchTemplate.info.participants)
+    {
+        // Distribute stats randomly per team matching global state, for non 0 values;
+        if (participantIndex <= 4)
+        {
+            participant.assists = myRandom::generateRandomInt(0, totalKillsA);
+            participant.deaths = totalDeathsA - myRandom::generateRandomInt(0, totalDeathsA);
+            participant.kills = totalKillsA - myRandom::generateRandomInt(0, totalKillsA);
+        }
+        else
+        {
+            participant.assists = myRandom::generateRandomInt(0, totalKillsB);
+            participant.deaths = totalDeathsB - myRandom::generateRandomInt(0, totalDeathsB);
+            participant.kills = totalKillsB - myRandom::generateRandomInt(0, totalKillsB);
+        };
 
-    std::vector<std::string> participantSecondary;
-    myRandom::getRandomVectorFromJSON(participantSecondary, mapping::SECONDARY_RUNES_JSON, 10);
+        participant.championName = mapping::CHAMPIONS.at(participant.championId);
 
-    // Will loop 10 times, once for each participant in game
-    for (json& participant : matchTemplate["info"]["participants"]) {
+        // Create a role type for champions;
+        std::string role = mapping::CHAMPIONS.at(participant.championId).role;
 
-        participant["assists"] = myRandom::generateRandomInt(0, 25);
-        participant["deaths"] = myRandom::generateRandomInt(0, 25);
-        participant["kills"] = myRandom::generateRandomInt(0, 25);
+        // Copy values to work with; Not counting shutdowns or devalues just base.
+        int goldKills = participant.kills;
 
-        participant["goldEarned"] = myRandom::generateRandomInt(1, 20000);
-        participant["totalDamageDealtToChampions"] = myRandom::generateRandomInt(1, 90000);
-        participant["totalMinionsKilled"] = myRandom::generateRandomInt(1, 200);
-        participant["totalAllyJungleMinionsKilled"] = myRandom::generateRandomInt(1, 100);
-        participant["totalEnemyJungleMinionsKilled"] = myRandom::generateRandomInt(1, 50);
+        int goldAssist = participant.assists;
+        // 3 Gold per sec gen since 1:40.
+        const int duration = matchTemplate.info.gameDuration;
+        int goldTime = (duration - 100) * 3;
 
-        participant["champExperience"] = myRandom::generateRandomInt(1, 12576);
-        participant["champLevel"] = myRandom::generateRandomInt(1, 18);
-        participant["championId"] = myRandom::generateRandomInt(1, 200);
+        participant.totalDamageDealtToChampions = myRandom::generateRandomInt(0, 60000);
+        // Perfect farm is 11/min, technically 12 only from minions;
+        participant.totalMinionsKilled = myRandom::generateRandomInt(0, duration * 11);
+        // Farm of 10cs/min only achievable when invading;
+        participant.totalAllyJungleMinionsKilled = (totalJungleCamps * duration) - myRandom::generateRandomInt(0, duration * 6);
+        participant.totalEnemyJungleMinionsKilled = totalJungleCamps - myRandom::generateRandomInt(0, duration * 6);
 
-        participant["championName"] = participantChamp.back();
-        participantChamp.pop_back();
+         // Items as IDs; Cassio doesn't wear boots;
+        if (participant.championId == 69)
+        {   
+            int randomMageItem = std::next(mapping::MAGE_ITEMS.begin(), (0, mapping::MAGE_ITEMS.size()))->first;
+            participant.item0 = 
+            participant.item0 = participant.item0 + 1 ;
+            participant.item1 = ;
+            participant.item2 = ;
+            participant.item3 = ;
+            participant.item4 = ;
+            participant.item5 = ;
+            participant.item6 = ;
+        }
+        // Item completion at 15 else no gold and standard starting item;
+        if (role == "Support" && duration < 900)
+        {
+            participant.goldEarned = goldKills * 300 + goldAssist * 50 + duration;
+            participant.item0 = 3865;
+        }
+        else if (role == "Support" && duration >= 900)
+        {
+            participant.goldEarned = goldKills * 300 + goldAssist * 50 + duration + 1300;
+            participant.item0 = std::next(mapping::SUPPORT_EVO.begin(), (0, mapping::SUPPORT_EVO.size()))->first;
+        } else if ()
+       
+            participant.goldEarned = goldKills * 300 + goldAssist * 50 + duration;
+        1020 participant.champExperience = ;
+        participant.champLevel = ;
+        participant.championId = ;
 
-        for (int i = 0; i < 7; i++){
-            std::string key = "item" + std::to_string(i);
-            participant[key] = participantItems.back();
-            participantItems.pop_back();
+        // Use components and starter items for shorter matches;
+        if (matchTemplate.info.gameEndTimestamp < 1200)
+        {
+            participant.item0 = std::next(mapping::BOOTS.begin(), (0, mapping::BOOTS.size()))->first;
+            participant.item1 = ;
+            participant.item2 = ;
+            participant.item3 = ;
+            participant.item4 = ;
+            participant.item5 = ;
+            participant.item6 = ;
         }
 
-        participant["summoner1Id"] = participantSummoners.back();
-        participantSummoners.pop_back();
-        participant["summoner2Id"] = participantSummoners.back();
-        participantSummoners.pop_back();
+       
+        else
+        {
+            participant.item0 = ;
+        };
+        if (role == "Bruiser")
+        {
+        }
+        else if (role == "Mage")
+        {
+        }
+        else if (role == "Assassin")
+        {
+        }
+        else if (role == "Marksman")
+        {
+        }
+        else if (role == "Tank")
+        {
+        }
+        else if (role == "Support")
+        {
+        }
 
-        participant["perks"]["styles"][0]["selections"][0]["perk"] = participantKeystone.back();
-        participantKeystone.pop_back();
+        participant.item1 = ;
+        participant.item2 = ;
+        participant.item3 = ;
+        participant.item4 = ;
+        participant.item5 = ;
+        participant.item6 = ;
 
-        participant["perks"]["styles"][1]["style"] = participantSecondary.back();
-        participantSecondary.pop_back();
+        participant.summoner1Id = ;
+        participant.summoner2Id = ;
 
-        // First iteration static placeholder name used for debugging
-        if (isFirstIteration) {
-            participant["riotIdGameName"] = "bsawatestuser";
-            participant["riotIdTagline"] = "test";
-            participant["summonerName"] = "bsawatestuser";
+        participant.perks.Primary = ;
+        participant.perks.Secondary = ;
+        for (int i = 0; i < (int)participant.perks.selections.size(); ++i)
+        {
+            participant.perks.selections[i] = ;
+        }
+
+        // Win/loss and team;
+        participant.win = (participantIndex < 5) ? firstSetWin : secondSetWin;
+        participant.teamId = (participantIndex < 5) ? 100 : 200;
+        participant.visionScore = (0, 50);
+
+        // Riot IDs and summoner name;
+        if (isFirstIteration)
+        {
+            participant.riotIdGameName = "bsawatestuser";
+            participant.riotIdTagline = "test";
+            participant.summonerName = "bsawatestuser";
             isFirstIteration = false;
-        } else {
-            participant["riotIdGameName"] = myRandom::generateRandomString(8);
-            participant["riotIdTagline"] = myRandom::generateRandomString(3);
-            participant["summonerName"] = myRandom::generateRandomString(8);
         }
+        else
+        {
+            participant.riotIdGameName = ;
+            participant.riotIdTagline = ;
+            participant.summonerName = ;
+        }
+
+        // metadata participant puuid placeholder
+        matchTemplate.metadata.participantPuuids[participantIndex] = ;
+
+        ++participantIndex;
     }
 
     return matchTemplate;
