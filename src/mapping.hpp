@@ -4,34 +4,13 @@
 #include <string>
 #include <array>
 
-using str = std::string;
-using map = std::unordered_map<int, str>;
-
 namespace mapping
 {
-    // Query names by ID inside structs;
-    extern const map KEYSTONES;
-    extern const map SECONDARY_RUNES;
-    extern const map SUMMONERS;
-    extern const map BOOTS;
-    extern const map CONSUMABLES;
-    extern const map JUNGLE_ITEMS;
-    extern const map STARTER_ITEMS;
-    extern const map COMPONENTS;
-    extern const map ASSASSIN_ITEMS;
-    extern const map MARKSMAN_ITEMS;
-    extern const map MAGE_ITEMS;
-    extern const map BRUISER_ITEMS;
-    extern const map TANK_ITEMS;
-    extern const map SUPPORT_ITEMS;
-    extern const map SUPPORT_EVO;
-    extern const std::unordered_map<int, Champion> CHAMPIONS;
-
     // Necessary structs for data;
     struct Champion
     {
-        str name;
-        str role;
+        std::string name;
+        std::string role;
     };
 
     struct Perks
@@ -47,17 +26,17 @@ namespace mapping
         int champExperience;
         int champLevel;
         int championId;
-        str championName;
+        std::string championName;
         int deaths;
         int goldEarned;
         int item0, item1, item2, item3, item4, item5, item6;
         int kills;
         Perks perks;
-        str riotIdGameName;
-        str riotIdTagline;
+        std::string riotIdGameName;
+        std::string riotIdTagline;
         int summoner1Id;
         int summoner2Id;
-        str summonerName;
+        std::string summonerName;
         int totalMinionsKilled;
         int neutralMinionsKilled;
         int totalAllyJungleMinionsKilled;
@@ -74,7 +53,7 @@ namespace mapping
         int gameDuration;
         long long gameEndTimestamp;
         long long gameStartTimestamp;
-        str gameVersion;
+        std::string gameVersion;
         long long gameId;
         int queueId;
         std::array<Participant, 10> participants;
@@ -82,8 +61,8 @@ namespace mapping
 
     struct MatchMetadata
     {
-        str matchId;
-        std::array<str, 10> participantPuuids;
+        std::string matchId;
+        std::array<std::string, 10> participantPuuids;
     };
 
     struct Match
@@ -91,4 +70,23 @@ namespace mapping
         MatchMetadata metadata;
         MatchInfo info;
     };
+
+    // Query names by ID inside structs;
+    extern const std::unordered_map<int, std::string> KEYSTONES;
+    extern const std::unordered_map<int, std::string> SECONDARY_RUNES;
+    extern const std::unordered_map<int, std::string> SUMMONERS;
+    extern const std::unordered_map<int, std::string> BOOTS;
+    extern const std::unordered_map<int, std::string> CONSUMABLES;
+    extern const std::unordered_map<int, std::string> JUNGLE_ITEMS;
+    extern const std::unordered_map<int, std::string> STARTER_ITEMS;
+    extern const std::unordered_map<int, std::string> COMPONENTS;
+    extern const std::unordered_map<int, std::string> ASSASSIN_ITEMS;
+    extern const std::unordered_map<int, std::string> MARKSMAN_ITEMS;
+    extern const std::unordered_map<int, std::string> MAGE_ITEMS;
+    extern const std::unordered_map<int, std::string> BRUISER_ITEMS;
+    extern const std::unordered_map<int, std::string> TANK_ITEMS;
+    extern const std::unordered_map<int, std::string> SUPPORT_ITEMS;
+    extern const std::unordered_map<int, std::string> SUPPORT_EVO;
+    extern const std::unordered_map<int, Champion> CHAMPIONS;
+    
 }

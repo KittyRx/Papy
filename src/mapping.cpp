@@ -3,12 +3,9 @@
 #include "dependencies/json.hpp"
 #include "mapping.hpp"
 
-using str = std::string;
-using map = std::unordered_map<int, str>;
-
 namespace mapping
 {
-    const map KEYSTONES = {
+    const std::unordered_map<int, std::string> KEYSTONES = {
         {8369, "First Strike"},
         {8124, "Predator"},
         {8112, "Electrocute"},
@@ -27,14 +24,14 @@ namespace mapping
         {9923, "Hail of Blades"},
         {8229, "Arcane Comet"}};
 
-    const map SECONDARY_RUNES = {
+    const std::unordered_map<int, std::string> SECONDARY_RUNES = {
         {8000, "Precision"},
         {8100, "Domination"},
         {8200, "Sorcery"},
         {8300, "Inspiration"},
         {8400, "Resolve"}};
 
-    const map SUMMMONERS = {
+    const std::unordered_map<int, std::string> SUMMMONERS = {
         {1, "Cleanse"},
         {3, "Exhaust"},
         {4, "Flash"},
@@ -45,7 +42,7 @@ namespace mapping
         {14, "Ignite"},
         {21, "Barrier"}};
 
-    const map BOOTS = {
+    const std::unordered_map<int, std::string> BOOTS = {
         {3006, "Berserker's Greaves"},
         {3009, "Boots of Swiftness"},
         {3020, "Sorcerer's Shoes"},
@@ -54,7 +51,7 @@ namespace mapping
         {3117, "Mobility Boots"},
         {3158, "Ionian Boots of Lucidity"}};
 
-    const map CONSUMABLES = {
+    const std::unordered_map<int, std::string> CONSUMABLES = {
         {2003, "Health Potion"},
         {2031, "Refillable Potion"},
         {2033, "Corrupting Potion"},
@@ -66,14 +63,14 @@ namespace mapping
         {2419, "Commencing Stopwatch"},
         {2423, "Perfectly Timed Stopwatch"}};
 
-    const map JUNGLE_ITEMS = {
+    const std::unordered_map<int, std::string> JUNGLE_ITEMS = {
         {1035, "Emberknife"},
         {1039, "Hailblade"},
         {1101, "Scorchclaw Pup"},
         {1102, "Gustwalker Hatchling"},
         {1103, "Mosstomper Seedling"}};
 
-    const map STARTER_ITEMS = {
+    const std::unordered_map<int, std::string> STARTER_ITEMS = {
         {1001, "Boots"},
         {3865, "World Atlas"},
         {1054, "Doran's Shield"},
@@ -82,7 +79,7 @@ namespace mapping
         {1082, "Dark Seal"},
         {1083, "Cull"}};
 
-    const map SUPPORT_EVO = {
+    const std::unordered_map<int, std::string> SUPPORT_EVO = {
         {3866, "Runic Compass"},
         {3867, "Bounty of Worlds"},
         {3869, "Celestial Opposition"},
@@ -91,7 +88,7 @@ namespace mapping
         {3876, "Solstice Sleigh"},
         {3877, "Bloodsong"}};
 
-    const map COMPONENTS = {
+    const std::unordered_map<int, std::string> COMPONENTS = {
         {1001, "Boots"},
         {1004, "Faerie Charm"},
         {1006, "Rejuvenation Bead"},
@@ -141,7 +138,7 @@ namespace mapping
         {6670, "Noonquiver"},
         {6677, "Rageknife"}};
 
-    const map ASSASSIN_ITEMS = {
+    const std::unordered_map<int, std::string> ASSASSIN_ITEMS = {
         {3142, "Youmuu's Ghostblade"},
         {3814, "Edge of Night"},
         {6691, "Duskblade of Draktharr"},
@@ -156,7 +153,7 @@ namespace mapping
         {3133, "Caulfield's Warhammer"},
         {4004, "Spectral Cutlass"}};
 
-    const map MARKSMAN_ITEMS = {
+    const std::unordered_map<int, std::string> MARKSMAN_ITEMS = {
         {3031, "Infinity Edge"},
         {3046, "Phantom Dancer"},
         {3094, "Rapid Firecannon"},
@@ -185,7 +182,7 @@ namespace mapping
         {3124, "Guinsoo's Rageblade"},
         {6677, "Rageknife"}};
 
-    const map MAGE_ITEMS = {
+    const std::unordered_map<int, std::string> MAGE_ITEMS = {
         {3089, "Rabadon's Deathcap"},
         {3165, "Morellonomicon"},
         {3157, "Zhonya's Hourglass"},
@@ -224,7 +221,7 @@ namespace mapping
         {3113, "Aether Wisp"},
         {4642, "Bandleglass Mirror"}};
 
-    const map BRUISER_ITEMS = {
+    const std::unordered_map<int, std::string> BRUISER_ITEMS = {
         {3071, "Black Cleaver"},
         {3053, "Sterak's Gage"},
         {3078, "Trinity Force"},
@@ -247,7 +244,7 @@ namespace mapping
         {1036, "Long Sword"},
         {1037, "Pickaxe"}};
 
-    const map TANK_ITEMS = {
+    const std::unordered_map<int, std::string> TANK_ITEMS = {
         {3068, "Sunfire Aegis"},
         {3075, "Thornmail"},
         {3110, "Frozen Heart"},
@@ -282,7 +279,7 @@ namespace mapping
         {6660, "Bami's Cinder"},
         {3024, "Glacial Buckler"}};
 
-    const map SUPPORT_ITEMS = {
+    const std::unordered_map<int, std::string> SUPPORT_ITEMS = {
         {3504, "Ardent Censer"},
         {3222, "Mikael's Blessing"},
         {3107, "Redemption"},
@@ -314,8 +311,8 @@ namespace mapping
 
     struct Champion
     {
-        str name;
-        str role;
+        std::string name;
+        std::string role;
     };
 
     const std::unordered_map<int, Champion> CHAMPIONS = {
@@ -324,14 +321,14 @@ namespace mapping
         {84, {"Akali", "Assassin"}},
         {166, {"Akshan", "Marksman"}},
         {12, {"Alistar", "Tank"}},
-        {799, {"Ambessa", "Unknown"}},
+        {799, {"Ambessa", "Bruiser"}},
         {32, {"Amumu", "Tank"}},
         {34, {"Anivia", "Mage"}},
         {1, {"Annie", "Mage"}},
         {523, {"Aphelios", "Marksman"}},
         {22, {"Ashe", "Marksman"}},
         {136, {"AurelionSol", "Mage"}},
-        {893, {"Aurora", "Unknown"}},
+        {893, {"Aurora", "Mage"}},
         {268, {"Azir", "Mage"}},
         {432, {"Bard", "Support"}},
         {200, {"Belveth", "Fighter"}},
@@ -503,17 +500,17 @@ namespace mapping
         int champExperience;
         int champLevel;
         int championId;
-        str championName;
+        std::string championName;
         int deaths;
         int goldEarned;
         int item0, item1, item2, item3, item4, item5, item6;
         int kills;
         Perks perks;
-        str riotIdGameName;
-        str riotIdTagline;
+        std::string riotIdGameName;
+        std::string riotIdTagline;
         int summoner1Id;
         int summoner2Id;
-        str summonerName;
+        std::string summonerName;
         int totalMinionsKilled;
         int neutralMinionsKilled;
         int totalAllyJungleMinionsKilled;
@@ -535,7 +532,7 @@ namespace mapping
         int gameDuration;
         long long gameEndTimestamp;
         long long gameStartTimestamp;
-        str gameVersion;
+        std::string gameVersion;
         long long gameId;
         int queueId;
         std::array<Participant, 10> participants;
@@ -544,8 +541,8 @@ namespace mapping
 
     struct MatchMetadata
     {
-        str matchId;
-        std::array<str, 10> participantPuuids;
+        std::string matchId;
+        std::array<std::string, 10> participantPuuids;
     };
     NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MatchMetadata, matchId, participantPuuids)
 

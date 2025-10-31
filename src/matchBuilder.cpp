@@ -7,21 +7,39 @@
 #include "myRandom.hpp"
 #include "mapping.hpp"
 
+#include <vector>
+#include <unordered_map>
+#include <algorithm>
+
 using mapping::Match;
+
+// Helper function
+static int getChampionIdByIndex(int index)
+{
+    int current = 0;
+    for (const auto &pair : mapping::CHAMPIONS)
+    {
+        if (current == index)
+        {
+            return pair.first;
+        }
+        current++;
+    }
+    return 1; // fallback to first champ if index too large
+}
 
 mapping::Match matchBuilder::randomMatch()
 {
     mapping::Match matchTemplate;
 
-    // Taking the time stamp of today in ms;
+    // Using curent data for realism;
     long long timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-    // And passing it as data for game start and creation ( for realism since server won't receive post requests for yesterday's or tomorrow's matches );
     matchTemplate.info.gameCreation = timestamp_ms;
     matchTemplate.info.gameStartTimestamp = timestamp_ms;
-    matchTemplate.info.gameDuration = (600, 3000); // seconds
+    matchTemplate.info.gameDuration = myRandom::generateRandomInt(600, 3000); // seconds
     matchTemplate.info.gameEndTimestamp = timestamp_ms + matchTemplate.info.gameDuration * 1000;
 
-    matchTemplate.metadata.matchId = "TEST1_" + myRandom::generateRandomNumberString(10);
+    matchTemplate.metadata.matchId = "MATCH_" + myRandom::generateRandomNumberString(10);
 
     // Randomly determine win/loss for the different teams
     bool firstSetWin = myRandom::getRandomBool();
@@ -33,64 +51,80 @@ mapping::Match matchBuilder::randomMatch()
     // Create a team state so as TeamADeaths = TeamBKills and viceversa;
     int totalDeathsA = myRandom::generateRandomInt(5, 30);
     int totalDeathsB = myRandom::generateRandomInt(5, 30);
-
-    // Then assign total kills;
     int totalKillsA = totalDeathsB;
     int totalKillsB = totalDeathsA;
 
-    // Limit number of camps per 45 mins at perfect clear.
+    // Distribute kills/deaths across team members;
+    std::vector<int> deathsDistA = myRandom::distributeTotal(totalDeathsA, 5);
+    std::vector<int> killsDistA = myRandom::distributeTotal(totalKillsA, 5);
+    std::vector<int> deathsDistB = myRandom::distributeTotal(totalDeathsB, 5);
+    std::vector<int> killsDistB = myRandom::distributeTotal(totalKillsB, 5);
+
+    // Limit number of camps per 45 mins at perfect clear;
     int totalJungleCamps = 120;
 
     int participantIndex = 0;
     for (auto &participant : matchTemplate.info.participants)
     {
-        // Distribute stats randomly per team matching global state, for non 0 values;
         if (participantIndex <= 4)
         {
+            participant.deaths = deathsDistA[participantIndex];
+            participant.kills = killsDistA[participantIndex];
             participant.assists = myRandom::generateRandomInt(0, totalKillsA);
-            participant.deaths = totalDeathsA - myRandom::generateRandomInt(0, totalDeathsA);
-            participant.kills = totalKillsA - myRandom::generateRandomInt(0, totalKillsA);
         }
         else
         {
+            int idx = participantIndex - 5;
+            participant.deaths = deathsDistB[idx];
+            participant.kills = killsDistB[idx];
             participant.assists = myRandom::generateRandomInt(0, totalKillsB);
-            participant.deaths = totalDeathsB - myRandom::generateRandomInt(0, totalDeathsB);
-            participant.kills = totalKillsB - myRandom::generateRandomInt(0, totalKillsB);
         };
 
-        participant.championName = mapping::CHAMPIONS.at(participant.championId);
+        participant.championId = getChampionIdByIndex(myRandom::generateRandomInt(0, mapping::CHAMPIONS.size() - 1));
+        participant.championName = mapping::CHAMPIONS.at(participant.championId).name;
 
         // Create a role type for champions;
         std::string role = mapping::CHAMPIONS.at(participant.championId).role;
+        // Map each role string to a pointer to its corresponding item set map.
+        std::unordered_map<std::string, const std::unordered_map<int, std::string> *> itemSets = {
+            {"Mage", &mapping::MAGE_ITEMS},
+            {"Bruiser", &mapping::BRUISER_ITEMS},
+            {"Assassin", &mapping::ASSASSIN_ITEMS},
+            {"Marksman", &mapping::MARKSMAN_ITEMS},
+            {"Tank", &mapping::TANK_ITEMS},
+            {"Support", &mapping::SUPPORT_ITEMS}
+        };
+        // Dereference the pointer to get the item set associated with the role.
+        const auto& itemSet = *itemSets[role];
 
         // Copy values to work with; Not counting shutdowns or devalues just base.
         int goldKills = participant.kills;
 
         int goldAssist = participant.assists;
-        // 3 Gold per sec gen since 1:40.
+
+        // 3 Gold per sec gen since 1:40;
         const int duration = matchTemplate.info.gameDuration;
         int goldTime = (duration - 100) * 3;
 
         participant.totalDamageDealtToChampions = myRandom::generateRandomInt(0, 60000);
-        // Perfect farm is 11/min, technically 12 only from minions;
+
+        // Perfect farm is 11cs/min, technically 12 only from minions;
         participant.totalMinionsKilled = myRandom::generateRandomInt(0, duration * 11);
+
         // Farm of 10cs/min only achievable when invading;
         participant.totalAllyJungleMinionsKilled = (totalJungleCamps * duration) - myRandom::generateRandomInt(0, duration * 6);
         participant.totalEnemyJungleMinionsKilled = totalJungleCamps - myRandom::generateRandomInt(0, duration * 6);
 
-         // Items as IDs; Cassio doesn't wear boots;
-        if (participant.championId == 69)
-        {   
-            int randomMageItem = std::next(mapping::MAGE_ITEMS.begin(), (0, mapping::MAGE_ITEMS.size()))->first;
-            participant.item0 = 
-            participant.item0 = participant.item0 + 1 ;
-            participant.item1 = ;
-            participant.item2 = ;
-            participant.item3 = ;
-            participant.item4 = ;
-            participant.item5 = ;
-            participant.item6 = ;
+        // Items as IDs;
+        if (participant.championId == 69) // Cassio doesn't wear boots;
+        {
+            std::vector<int> items = myRandom::getRandomKeysCached(itemSet, 7);
+            for (int i = 0; i < 7; ++i)
+            {
+                *(&participant.item0 + i) = items[i];
+            }
         }
+
         // Item completion at 15 else no gold and standard starting item;
         if (role == "Support" && duration < 900)
         {
@@ -101,12 +135,14 @@ mapping::Match matchBuilder::randomMatch()
         {
             participant.goldEarned = goldKills * 300 + goldAssist * 50 + duration + 1300;
             participant.item0 = std::next(mapping::SUPPORT_EVO.begin(), (0, mapping::SUPPORT_EVO.size()))->first;
-        } else if ()
-       
+        }
+        else
+        {
             participant.goldEarned = goldKills * 300 + goldAssist * 50 + duration;
-        1020 participant.champExperience = ;
-        participant.champLevel = ;
-        participant.championId = ;
+        }
+
+        participant.champExperience = myRandom::generateRandomInt(1, 12576);
+        participant.champLevel = myRandom::generateRandomInt(1, 18);
 
         // Use components and starter items for shorter matches;
         if (matchTemplate.info.gameEndTimestamp < 1200)
@@ -120,7 +156,6 @@ mapping::Match matchBuilder::randomMatch()
             participant.item6 = ;
         }
 
-       
         else
         {
             participant.item0 = ;
@@ -176,13 +211,13 @@ mapping::Match matchBuilder::randomMatch()
         }
         else
         {
-            participant.riotIdGameName = ;
-            participant.riotIdTagline = ;
-            participant.summonerName = ;
+            participant.riotIdGameName = myRandom::generateRandomString(8);
+            participant.riotIdTagline = myRandom::generateRandomString(3);
+            participant.summonerName = myRandom::generateRandomString(8);
         }
 
         // metadata participant puuid placeholder
-        matchTemplate.metadata.participantPuuids[participantIndex] = ;
+        matchTemplate.metadata.participantPuuids[participantIndex] = myRandom::generateRandomString(16);
 
         ++participantIndex;
     }
