@@ -92,10 +92,9 @@ mapping::Match matchBuilder::randomMatch()
             {"Assassin", &mapping::ASSASSIN_ITEMS},
             {"Marksman", &mapping::MARKSMAN_ITEMS},
             {"Tank", &mapping::TANK_ITEMS},
-            {"Support", &mapping::SUPPORT_ITEMS}
-        };
+            {"Support", &mapping::SUPPORT_ITEMS}};
         // Dereference the pointer to get the item set associated with the role.
-        const auto& itemSet = *itemSets[role];
+        const auto &itemSet = *itemSets[role];
 
         // Copy values to work with; Not counting shutdowns or devalues just base.
         int goldKills = participant.kills;
@@ -114,16 +113,6 @@ mapping::Match matchBuilder::randomMatch()
         // Farm of 10cs/min only achievable when invading;
         participant.totalAllyJungleMinionsKilled = (totalJungleCamps * duration) - myRandom::generateRandomInt(0, duration * 6);
         participant.totalEnemyJungleMinionsKilled = totalJungleCamps - myRandom::generateRandomInt(0, duration * 6);
-
-        // Items as IDs;
-        if (participant.championId == 69) // Cassio doesn't wear boots;
-        {
-            std::vector<int> items = myRandom::getRandomKeysCached(itemSet, 7);
-            for (int i = 0; i < 7; ++i)
-            {
-                *(&participant.item0 + i) = items[i];
-            }
-        }
 
         // Item completion at 15 else no gold and standard starting item;
         if (role == "Support" && duration < 900)
@@ -144,16 +133,20 @@ mapping::Match matchBuilder::randomMatch()
         participant.champExperience = myRandom::generateRandomInt(1, 12576);
         participant.champLevel = myRandom::generateRandomInt(1, 18);
 
+        // Cassio doesn't wear boots;
+        if (participant.championId == 69)
+        {
+            std::vector<int> items = myRandom::getRandomKeysCached(itemSet, 7);
+            for (int i = 0; i < 7; ++i)
+            {
+                *(&participant.item0 + i) = items[i];
+            }
+        }
+
         // Use components and starter items for shorter matches;
         if (matchTemplate.info.gameEndTimestamp < 1200)
         {
             participant.item0 = std::next(mapping::BOOTS.begin(), (0, mapping::BOOTS.size()))->first;
-            participant.item1 = ;
-            participant.item2 = ;
-            participant.item3 = ;
-            participant.item4 = ;
-            participant.item5 = ;
-            participant.item6 = ;
         }
 
         else
