@@ -6,9 +6,6 @@
 
 #include "dependencies/json.hpp"
 
-// Constructor to initialize the random number generator with a seed.
-// These are declared static so there is only one instance across all objects
-// of the myRandom class.
 thread_local std::random_device myRandom::rd;
 thread_local std::mt19937 myRandom::gen(myRandom::rd());
 
@@ -58,7 +55,13 @@ bool myRandom::getRandomBool()
     return distrib(gen) == 1;
 };
 
-// Helper: get N unique random keys from a map (without replacement when possible);
+/**
+ * @brief Takes an unordered map and caches the key list for all members then returns a `count` ammount of random `IDs` inside a vector;
+ * 
+ * @param a A reference to the `Unordered_map<int, string>` that needs sampling;
+ * @param b The number of keys you want to retrieve from the map;
+ * @return Returns a `vector<int>` with the `IDs` of `count` random elements from inside the map;
+**/
 static std::vector<int> getRandomKeysCached(const std::unordered_map<int, std::string> &m, size_t count)
 {
     static std::unordered_map<const std::unordered_map<int, std::string> *, std::vector<int>> keyCache;
@@ -99,7 +102,12 @@ static std::vector<int> getRandomKeysCached(const std::unordered_map<int, std::s
     return out;
 };
 
-// Helper: cache keys of a map for efficient repeated sampling;
+/**
+ * @brief Takes an unordered map and caches the key list for each member;
+ * 
+ * @param a A reference to the `Unordered_map<int, string>` that needs sampling;
+ * @return Returns an `int` with the `ID` of a random element;
+**/
 static int getRandomKeyCached(const std::unordered_map<int, std::string> &m)
 {
     static std::unordered_map<const std::unordered_map<int, std::string> *, std::vector<int>> keyCache;
@@ -120,6 +128,13 @@ static int getRandomKeyCached(const std::unordered_map<int, std::string> &m)
     return keys[idx];
 };
 
+/**
+ * @brief Takes a total value of `int` then distributes that across members pseudo randomly;
+ * 
+ * @param a Integer value representing the total value to be distributed;
+ * @param b Integer value representing how many members to distribute to;
+ * @return Returns a `vector<int>` with values randomly distributed for each member that are = total value;
+**/
 std::vector<int> myRandom::distributeTotal(int total, int count)
 {
     std::vector<int> result(count, 0);

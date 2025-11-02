@@ -61,7 +61,8 @@ namespace mapping
         {2140, "Elixir of Wrath"},
         {2010, "Total Biscuit of Everlasting Will"},
         {2419, "Commencing Stopwatch"},
-        {2423, "Perfectly Timed Stopwatch"}};
+        {2423, "Perfectly Timed Stopwatch"},
+        {2055, "Control Ward"}};
 
     const std::unordered_map<int, std::string> JUNGLE_ITEMS = {
         {1035, "Emberknife"},
@@ -72,14 +73,14 @@ namespace mapping
 
     const std::unordered_map<int, std::string> STARTER_ITEMS = {
         {1001, "Boots"},
-        {3865, "World Atlas"},
         {1054, "Doran's Shield"},
         {1055, "Doran's Blade"},
         {1056, "Doran's Ring"},
         {1082, "Dark Seal"},
         {1083, "Cull"}};
 
-    const std::unordered_map<int, std::string> SUPPORT_EVO = {
+    const std::unordered_map<int, std::string> SUPPORT_MAIN = {
+        {3865, "World Atlas"},
         {3866, "Runic Compass"},
         {3867, "Bounty of Worlds"},
         {3869, "Celestial Opposition"},
@@ -295,18 +296,22 @@ namespace mapping
         {4005, "Imperial Mandate"},
         {3114, "Forbidden Idol"},
         {3012, "Chalice of Blessing"},
-        {3850, "Spellthief's Edge"},
         {3851, "Frostfang"},
         {3853, "Shard of True Ice"},
         {3854, "Steel Shoulderguards"},
         {3855, "Runesteel Spaulders"},
         {3857, "Pauldrons of Whiterock"},
-        {3858, "Relic Shield"},
         {3859, "Targon's Buckler"},
         {3860, "Bulwark of the Mountain"},
-        {3862, "Spectral Sickle"},
         {3863, "Harrowing Crescent"},
         {3864, "Black Mist Scythe"},
+    };
+
+    const std::unordered_map<int, std::string> SPECIAL_ITEMS{
+        {3513, "Eye of the Herald"},
+        {3340, "Warding Totem"},
+        {3364, "Oracle Lens"},
+        {3363, "Farsight Alteratio"},
     };
 
     struct Champion
@@ -492,7 +497,7 @@ namespace mapping
         int Secondary;
         std::array<int, 5> selections;
     };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Perks, Primary, Secondary, selections)
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Perks, Primary, Secondary, selections);
 
     struct Participant
     {
@@ -509,7 +514,6 @@ namespace mapping
         std::string riotIdGameName;
         std::string riotIdTagline;
         int summoner1Id;
-        int summoner2Id;
         std::string summonerName;
         int totalMinionsKilled;
         int neutralMinionsKilled;
@@ -522,9 +526,9 @@ namespace mapping
     };
     NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Participant, assists, champExperience, champLevel, championId,
                                        championName, deaths, goldEarned, item0, item1, item2, item3, item4, item5, item6, kills, perks,
-                                       riotIdGameName, riotIdTagline, summoner1Id, summoner2Id, summonerName, totalMinionsKilled,
+                                       riotIdGameName, riotIdTagline, summoner1Id, summonerName, totalMinionsKilled,
                                        neutralMinionsKilled, totalAllyJungleMinionsKilled, totalEnemyJungleMinionsKilled, totalDamageDealtToChampions,
-                                       win, teamId, visionScore)
+                                       win, teamId, visionScore);
 
     struct MatchInfo
     {
@@ -537,19 +541,19 @@ namespace mapping
         int queueId;
         std::array<Participant, 10> participants;
     };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MatchInfo, gameCreation, gameDuration, gameEndTimestamp, gameStartTimestamp, gameVersion, gameId, queueId, participants)
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MatchInfo, gameCreation, gameDuration, gameEndTimestamp, gameStartTimestamp, gameVersion, gameId, queueId, participants);
 
     struct MatchMetadata
     {
         std::string matchId;
         std::array<std::string, 10> participantPuuids;
     };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MatchMetadata, matchId, participantPuuids)
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MatchMetadata, matchId, participantPuuids);
 
     struct Match
     {
         MatchMetadata metadata;
         MatchInfo info;
     };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Match, metadata, info)
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Match, metadata, info);
 }
