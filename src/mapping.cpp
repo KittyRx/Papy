@@ -314,12 +314,6 @@ namespace mapping
         {3363, "Farsight Alteratio"},
     };
 
-    struct Champion
-    {
-        std::string name;
-        std::string role;
-    };
-
     const std::unordered_map<int, Champion> CHAMPIONS = {
         {266, {"Aatrox", "Bruiser"}},
         {103, {"Ahri", "Mage"}},
@@ -491,60 +485,4 @@ namespace mapping
         {142, {"Zoe", "Mage"}},
         {143, {"Zyra", "Mage"}}};
 
-    struct Perks
-    {
-        int Primary;
-        int Secondary;
-        std::array<int, 5> selections;
-    };
-
-    struct Participant
-    {
-        int assists;
-        int champExperience;
-        int champLevel;
-        int championId;
-        std::string championName;
-        int deaths;
-        int goldEarned;
-        int item0, item1, item2, item3, item4, item5, item6;
-        int kills;
-        Perks perks;
-        std::string riotIdGameName;
-        std::string riotIdTagline;
-        int summoner1Id;
-        std::string summonerName;
-        int totalMinionsKilled;
-        int neutralMinionsKilled;
-        int totalAllyJungleMinionsKilled;
-        int totalEnemyJungleMinionsKilled;
-        int totalDamageDealtToChampions;
-        bool win;
-        int teamId;
-        int visionScore;
-    };
-
-    struct MatchInfo
-    {
-        long long gameCreation;
-        int gameDuration;
-        long long gameEndTimestamp;
-        long long gameStartTimestamp;
-        std::string gameVersion;
-        long long gameId;
-        int queueId;
-        std::array<Participant, 10> participants;
-    };
-
-    struct MatchMetadata
-    {
-        std::string matchId;
-        std::array<std::string, 10> participantPuuids;
-    };
-
-    struct Match
-    {
-        MatchMetadata metadata;
-        MatchInfo info;
-    };
 };
