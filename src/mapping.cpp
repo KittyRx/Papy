@@ -497,7 +497,6 @@ namespace mapping
         int Secondary;
         std::array<int, 5> selections;
     };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Perks, Primary, Secondary, selections);
 
     struct Participant
     {
@@ -524,11 +523,6 @@ namespace mapping
         int teamId;
         int visionScore;
     };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Participant, assists, champExperience, champLevel, championId,
-                                       championName, deaths, goldEarned, item0, item1, item2, item3, item4, item5, item6, kills, perks,
-                                       riotIdGameName, riotIdTagline, summoner1Id, summonerName, totalMinionsKilled,
-                                       neutralMinionsKilled, totalAllyJungleMinionsKilled, totalEnemyJungleMinionsKilled, totalDamageDealtToChampions,
-                                       win, teamId, visionScore);
 
     struct MatchInfo
     {
@@ -541,19 +535,16 @@ namespace mapping
         int queueId;
         std::array<Participant, 10> participants;
     };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MatchInfo, gameCreation, gameDuration, gameEndTimestamp, gameStartTimestamp, gameVersion, gameId, queueId, participants);
 
     struct MatchMetadata
     {
         std::string matchId;
         std::array<std::string, 10> participantPuuids;
     };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MatchMetadata, matchId, participantPuuids);
 
     struct Match
     {
         MatchMetadata metadata;
         MatchInfo info;
     };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Match, metadata, info);
-}
+};
