@@ -62,7 +62,7 @@ bool myRandom::getRandomBool()
  * @param b The number of keys you want to retrieve from the map;
  * @return Returns a `vector<int>` with the `IDs` of `count` random elements from inside the map;
 **/
-static std::vector<int> getRandomKeysCached(const std::unordered_map<int, std::string> &m, size_t count)
+std::vector<int> myRandom::getRandomKeysCached(const std::unordered_map<int, std::string> &m, size_t count)
 {
     static std::unordered_map<const std::unordered_map<int, std::string> *, std::vector<int>> keyCache;
     auto it = keyCache.find(&m);
@@ -108,7 +108,7 @@ static std::vector<int> getRandomKeysCached(const std::unordered_map<int, std::s
  * @param a A reference to the `Unordered_map<int, string>` that needs sampling;
  * @return Returns an `int` with the `ID` of a random element;
 **/
-static int getRandomKeyCached(const std::unordered_map<int, std::string> &m)
+int myRandom::getRandomKeyCached(const std::unordered_map<int, std::string> &m)
 {
     static std::unordered_map<const std::unordered_map<int, std::string> *, std::vector<int>> keyCache;
     auto it = keyCache.find(&m);

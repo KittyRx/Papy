@@ -96,6 +96,7 @@ nlohmann::json matchBuilder::randomMatch()
             return GamePhase::MID;
         if (duration < 2000)
             return GamePhase::LATE;
+        return GamePhase::VERY_LATE;
     };
 
     int participantIndex = 0;
