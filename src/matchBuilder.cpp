@@ -40,7 +40,8 @@ static int getChampionIdByIndex(int index)
  **/
 nlohmann::json matchBuilder::randomMatch()
 {
-    mapping::Match matchTemplate;
+    // Value-initialize to zero out primitive fields and avoid uninitialized data
+    mapping::Match matchTemplate{};
     long long timestamp_ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     matchTemplate.info.gameCreation = timestamp_ms;
     matchTemplate.info.gameStartTimestamp = timestamp_ms;
@@ -99,6 +100,14 @@ nlohmann::json matchBuilder::randomMatch()
         return GamePhase::VERY_LATE;
     };
 
+    // Generate team IDs once to avoid segmentation faults due to inconsistent team assignments
+    const int teamID = myRandom::generateRandomInt(0, 200);
+    int secondTeamID = myRandom::generateRandomInt(0, 200);
+    // Ensure team IDs are different
+    while (secondTeamID == teamID) {
+        secondTeamID = myRandom::generateRandomInt(0, 200);
+    }
+
     int participantIndex = 0;
     for (auto &participant : matchTemplate.info.participants)
     {
@@ -134,7 +143,20 @@ nlohmann::json matchBuilder::randomMatch()
         std::string role = mapping::CHAMPIONS.at(participant.championId).role;
         GamePhase phase = getGamePhase(duration);
         // Dereference the pointer to get the item set associated with the role;
-        const auto &itemSet = *itemSets[role];
+        // Use find() and a fallback instead of operator[] which would insert a null
+        // entry into the map when the role string doesn't match exactly.
+        const std::unordered_map<int, std::string> *itemSetPtr = nullptr;
+        auto it_role = itemSets.find(role);
+        if (it_role != itemSets.end() && it_role->second != nullptr)
+        {
+            itemSetPtr = it_role->second;
+        }
+        else
+        {
+            // Fallback to a safe item set when role isn't found
+            itemSetPtr = &mapping::COMPONENTS;
+        }
+        const auto &itemSet = *itemSetPtr;
 
         // Set the trinket or special;
         participant.item6 = myRandom::getRandomKeyCached(mapping::SPECIAL_ITEMS);
@@ -246,19 +268,18 @@ nlohmann::json matchBuilder::randomMatch()
         }
 
         participant.champLevel = level;
-        participant.summoner1Id = myRandom::generateRandomInt(6,36);
+        participant.summoner1Id = myRandom::generateRandomInt(6, 36);
 
         participant.perks.Primary = myRandom::getRandomKeyCached(mapping::KEYSTONES);
         participant.perks.Secondary = myRandom::getRandomKeyCached(mapping::SECONDARY_RUNES);
-
+        // Assign pre-generated team IDs to participants
+        participant.teamId = (participantIndex < 5) ? teamID : secondTeamID;
+        participant.visionScore = myRandom::generateRandomInt(0, 50);
         // Win/loss and team
         participant.win = (participantIndex < 5) ? firstSetWin : secondSetWin;
 
-        // Give participants the same team id;
-        const int teamID = myRandom::generateRandomInt(0,200);
-        const int secondTeamID = myRandom::generateRandomInt(0,200);
-        participant.teamId = (participantIndex < 5) ? teamID : secondTeamID;
-        participant.visionScore = (0, 50);
+    // (removed duplicated generation of team IDs here - team IDs were
+    // pre-generated outside the loop to ensure consistent assignment)
 
         // Riot IDs and summoner name
         if (isFirstIteration)

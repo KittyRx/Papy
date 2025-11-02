@@ -35,7 +35,6 @@ namespace mapping
         std::string riotIdGameName;
         std::string riotIdTagline;
         int summoner1Id;
-        int summoner2Id;
         std::string summonerName;
         int totalMinionsKilled;
         int neutralMinionsKilled;
@@ -102,8 +101,8 @@ namespace mapping
 
     NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Participant, assists, champExperience, champLevel, championId,
                                        championName, deaths, goldEarned, item0, item1, item2, item3, item4, item5, item6, kills, perks,
-                                       riotIdGameName, riotIdTagline, summoner1Id, summoner2Id, summonerName, totalMinionsKilled,
-                                       neutralMinionsKilled, totalAllyJungleMinionsKilled, totalEnemyJungleMinionsKilled, totalDamageDealtToChampions,
+                                       riotIdGameName, riotIdTagline, summoner1Id, summonerName, totalMinionsKilled,
+                                       totalAllyJungleMinionsKilled, totalEnemyJungleMinionsKilled, totalDamageDealtToChampions,
                                        win, teamId, visionScore);
 
     NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MatchInfo, gameCreation, gameDuration, gameEndTimestamp, gameStartTimestamp, gameVersion, gameId, queueId, participants);
