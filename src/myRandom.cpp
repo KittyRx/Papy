@@ -3,6 +3,7 @@
 #include <iostream>
 #include <random>
 #include <string>
+#include <unordered_set>
 
 #include "dependencies/json.hpp"
 
@@ -14,6 +15,24 @@ int myRandom::generateRandomInt(int min, int max)
     std::uniform_int_distribution<> distrib(min, max);
     return distrib(gen);
 };
+
+std::vector<int> myRandom::generateUniqueInts(int min, int max, int count) {
+    std::vector<int> result;
+    std::unordered_set<int> used;
+
+    while (result.size() < count) {
+        int value = myRandom::generateRandomInt(min, max);
+        if (used.find(value) == used.end()) {
+            result.push_back(value);
+            used.insert(value);
+        }
+    }
+
+    return result;
+}
+
+
+
 
 std::string myRandom::generateRandomString(size_t length)
 {

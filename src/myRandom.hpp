@@ -15,7 +15,8 @@ public:
     static int getRandomKeyCached(const std::unordered_map<int, std::string> &m);
     static std::vector<int> getRandomKeysCached(const std::unordered_map<int, std::string> &m, size_t count);
     static std::vector<int> distributeTotal(int total, int count);
-
+    static std::vector<int> generateUniqueInts(int min, int max, int count);
+    
 private:
     static thread_local std::random_device rd; // Seed source
     static thread_local std::mt19937 gen;

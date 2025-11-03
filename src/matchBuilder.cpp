@@ -7,9 +7,9 @@
 #include "myRandom.hpp"
 #include "mapping.hpp"
 
-#include <vector>
 #include <unordered_map>
 #include <algorithm>
+#include <vector>
 
 using mapping::Match;
 
@@ -100,6 +100,32 @@ nlohmann::json matchBuilder::randomMatch()
         return GamePhase::VERY_LATE;
     };
 
+    // Levels and exp
+    constexpr int XP_FOR_LEVEL[19] = {
+        0,     // unused index 0;
+        0,     // level 1;
+        280,   // level 2;
+        660,   // level 3;
+        1140,  // level 4;
+        1720,  // level 5;
+        2400,  // level 6;
+        3180,  // level 7;
+        4060,  // level 8;
+        5040,  // level 9;
+        6120,  // level 10;
+        7300,  // level 11;
+        8580,  // level 12;
+        9960,  // level 13;
+        11440, // level 14;
+        12920, // level 15;
+        14500, // level 16;
+        16180, // level 17;
+        17960  // level 18 (min xp at 18);
+    };
+
+    // Determine what champions will play before assigning them to players;
+    std::vector<int> uniqueChamps = myRandom::generateUniqueInts(0, 166, 10);
+
     // Generate team IDs once to avoid segmentation faults due to inconsistent team assignments
     const int teamID = myRandom::generateRandomInt(0, 200);
     int secondTeamID = myRandom::generateRandomInt(0, 200);
@@ -127,10 +153,27 @@ nlohmann::json matchBuilder::randomMatch()
             participant.assists = myRandom::generateRandomInt(0, totalKillsB);
         };
 
+        // Use an integer from champion vector to get an ID;
+        participant.championId = getChampionIdByIndex(uniqueChamps.back());
+        // Remove the used value;
+        uniqueChamps.pop_back();
+        participant.championName = mapping::CHAMPIONS.at(participant.championId).name;
+        std::string role = mapping::CHAMPIONS.at(participant.championId).role;
+        GamePhase phase = getGamePhase(duration);
+
         participant.totalDamageDealtToChampions = myRandom::generateRandomInt(0, duration * 750 / 60); // DPM between 622 in Pro play to 750 in ranked;
-        participant.totalMinionsKilled = myRandom::generateRandomInt(0, duration * 10 / 60);           // 11/12 cs/m ceiling on minion waves;
-        participant.totalAllyJungleMinionsKilled = myRandom::generateRandomInt(0, duration * 6 / 60);
-        participant.totalEnemyJungleMinionsKilled = myRandom::generateRandomInt(0, duration * 6 / 60);
+        if (role != "Support")
+        {
+            participant.totalMinionsKilled = myRandom::generateRandomInt(0, duration * 10 / 60); // 11/12 cs/m ceiling on minion waves;
+            participant.totalAllyJungleMinionsKilled = myRandom::generateRandomInt(0, duration * 3 / 60);
+            participant.totalEnemyJungleMinionsKilled = myRandom::generateRandomInt(0, duration * 3 / 60);
+        }
+        else
+        {
+            participant.totalMinionsKilled = myRandom::generateRandomInt(0, duration * 3 / 60); // 11/12 cs/m ceiling on minion waves;
+            participant.totalAllyJungleMinionsKilled = myRandom::generateRandomInt(0, duration * 1 / 60);
+            participant.totalEnemyJungleMinionsKilled = myRandom::generateRandomInt(0, duration * 1 / 60);
+        }
 
         const int minions = participant.totalMinionsKilled;
         const int jglCamps = participant.totalAllyJungleMinionsKilled + participant.totalEnemyJungleMinionsKilled;
@@ -139,13 +182,11 @@ nlohmann::json matchBuilder::randomMatch()
         const int totalGold = goldKills + goldAssist + goldPerSec + minions + jglCamps;
         participant.goldEarned = totalGold;
 
-        participant.championId = getChampionIdByIndex(myRandom::generateRandomInt(0, mapping::CHAMPIONS.size() - 1));
-        participant.championName = mapping::CHAMPIONS.at(participant.championId).name;
-        std::string role = mapping::CHAMPIONS.at(participant.championId).role;
-        GamePhase phase = getGamePhase(duration);
-        // Dereference the pointer to get the item set associated with the role;
-        // Use find() and a fallback instead of operator[] which would insert a null
-        // entry into the map when the role string doesn't match exactly.
+        /**
+        ** Dereference the pointer to get the item set associated with the role,
+        ** use find() and a fallback instead of operator[] which would insert a null
+        ** entry into the map when the role string doesn't match exactly;
+        **/
         const std::unordered_map<int, std::string> *itemSetPtr = nullptr;
         auto it_role = itemSets.find(role);
         if (it_role != itemSets.end() && it_role->second != nullptr)
@@ -154,7 +195,7 @@ nlohmann::json matchBuilder::randomMatch()
         }
         else
         {
-            // Fallback to a safe item set when role isn't found
+            // Fallback to a safe item set when role isn't found;
             itemSetPtr = &mapping::COMPONENTS;
         }
         const auto &itemSet = *itemSetPtr;
@@ -194,7 +235,7 @@ nlohmann::json matchBuilder::randomMatch()
         else if (role == "Support" && phase == GamePhase::MID)
         {
             // Supports don't farm but might take jgl camps;
-            participant.goldEarned = totalGold + 1300 - minions - jglCamps % 2;
+            participant.goldEarned = totalGold + 1300 - minions - jglCamps;
             participant.item0 = myRandom::getRandomKeyCached(mapping::SUPPORT_MAIN);
         };
 
@@ -240,39 +281,25 @@ nlohmann::json matchBuilder::randomMatch()
                 *(&participant.item1 + i) = items[i];
             }
         }
+        const int experienceKills = participant.kills * 300;
+        const int experienceAssists = participant.assists * 410;
+        const int experienceFarm = minions * 60 + jglCamps * 120;
 
-        const int experienceKills = participant.kills * 590;
-        const int experienceAssists = participant.assists * 590;
-        int experienceFarm = minions * 60 + jglCamps * 120;
+        if (role == "Support")
+        {
+            const int experienceAssists = participant.assists * 800;
+            const int experienceFarm = minions * 80 + jglCamps * 150;
+        }
+
         if (participant.item6 == 3513)
         {
             int experienceFarm = minions * 60 + jglCamps * 120 + 300;
-        }
-
-        const int totalExperience = experienceAssists + experienceKills + experienceFarm;
-        participant.champExperience = totalExperience;
-
-        constexpr int XP_FOR_LEVEL[19] = {
-            0,     // unused index 0;
-            0,     // level 1;
-            280,   // level 2;
-            660,   // level 3;
-            1140,  // level 4;
-            1720,  // level 5;
-            2400,  // level 6;
-            3180,  // level 7;
-            4060,  // level 8;
-            5040,  // level 9;
-            6120,  // level 10;
-            7300,  // level 11;
-            8580,  // level 12;
-            9960,  // level 13;
-            11440, // level 14;
-            12920, // level 15;
-            14500, // level 16;
-            16180, // level 17;
-            17960  // level 18 (min xp at 18);
         };
+
+        const int totalExperience = experienceKills + experienceAssists + experienceFarm;
+        const int cappedExperience = std::min(totalExperience, XP_FOR_LEVEL[19]);
+
+        participant.champExperience = cappedExperience;
 
         int level = 1;
         for (int lvl = 18; lvl >= 1; --lvl)
