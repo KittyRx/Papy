@@ -16,23 +16,34 @@ int myRandom::generateRandomInt(int min, int max)
     return distrib(gen);
 };
 
-std::vector<int> myRandom::generateUniqueInts(int min, int max, int count) {
-    std::vector<int> result;
-    std::unordered_set<int> used;
-
-    while (result.size() < count) {
-        int value = myRandom::generateRandomInt(min, max);
-        if (used.find(value) == used.end()) {
-            result.push_back(value);
-            used.insert(value);
+std::pair<std::vector<int>, std::vector<int>> myRandom::generateUniqueIntsPair(
+    int min1, int max1, int count1,
+    int min2, int max2, int count2
+) {
+    std::vector<int> result1;
+    std::unordered_set<int> used1;
+    
+    while (result1.size() < count1) {
+        int value = myRandom::generateRandomInt(min1, max1);
+        if (used1.find(value) == used1.end()) {
+            result1.push_back(value);
+            used1.insert(value);
         }
     }
-
-    return result;
+    
+    std::vector<int> result2;
+    std::unordered_set<int> used2;
+    
+    while (result2.size() < count2) {
+        int value = myRandom::generateRandomInt(min2, max2);
+        if (used2.find(value) == used2.end()) {
+            result2.push_back(value);
+            used2.insert(value);
+        }
+    }
+    
+    return {result1, result2};
 }
-
-
-
 
 std::string myRandom::generateRandomString(size_t length)
 {
@@ -151,15 +162,14 @@ int myRandom::getRandomKeyCached(const std::unordered_map<int, std::string> &m)
  * @brief Takes a total value of `int` then distributes that across members pseudo randomly;
  * 
  * @param a Integer value representing the total value to be distributed;
- * @param b Integer value representing how many members to distribute to;
- * @return Returns a `vector<int>` with values randomly distributed for each member that are = total value;
+ * @return Returns a `array<int, 5>` with values randomly distributed for each member that are = total value;
 **/
-std::vector<int> myRandom::distributeTotal(int total, int count)
+std::array<int, 5> myRandom::distributeTotal(int total)
 {
-    std::vector<int> result(count, 0);
+    std::array<int, 5> result = {}; // Zero-initialize all 5 elements
     for (int i = 0; i < total; ++i)
     {
-        result[generateRandomInt(0, count - 1)]++;
+        result[generateRandomInt(0, 4)]++; // 0 to 4 for 5 elements
     }
     return result;
 }

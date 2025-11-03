@@ -51,34 +51,6 @@ nlohmann::json matchBuilder::randomMatch()
     const int duration = matchTemplate.info.gameDuration;
     const int goldPerSec = (duration - 100) * 3; // 3 Gold per sec gen since 1:40m ( first 100 secs no gold gen );
 
-    // Randomly determine win/loss for the different teams
-    bool firstSetWin = myRandom::getRandomBool();
-    bool secondSetWin = !firstSetWin;
-
-    // Used in assigning the first user to bsawatestuser#test
-    bool isFirstIteration = true;
-
-    // Create a team state so as TeamADeaths = TeamBKills and viceversa;
-    const int totalDeathsA = myRandom::generateRandomInt(5, 30);
-    const int totalDeathsB = myRandom::generateRandomInt(5, 30);
-    const int totalKillsA = totalDeathsB;
-    const int totalKillsB = totalDeathsA;
-
-    // Create vectors with values for deaths and kills which will be used to distribute stats in the `for loop` to each player;
-    std::vector<int> deathsDistA = myRandom::distributeTotal(totalDeathsA, 5);
-    std::vector<int> killsDistB = deathsDistA; // Team B kills = Team A deaths
-    std::vector<int> deathsDistB = myRandom::distributeTotal(totalDeathsB, 5);
-    std::vector<int> killsDistA = deathsDistB; // Team A kills = Team B deaths
-
-    // Map each role string to a pointer corresponding to its item set map;
-    std::unordered_map<std::string, const std::unordered_map<int, std::string> *> itemSets = {
-        {"Mage", &mapping::MAGE_ITEMS},
-        {"Bruiser", &mapping::BRUISER_ITEMS},
-        {"Assassin", &mapping::ASSASSIN_ITEMS},
-        {"Marksman", &mapping::MARKSMAN_ITEMS},
-        {"Tank", &mapping::TANK_ITEMS},
-        {"Support", &mapping::SUPPORT_ITEMS}};
-
     // Helper enum for game phases;
     enum class GamePhase
     {
@@ -99,6 +71,40 @@ nlohmann::json matchBuilder::randomMatch()
             return GamePhase::LATE;
         return GamePhase::VERY_LATE;
     };
+    GamePhase phase = getGamePhase(duration);
+
+    // Generate some unique ints before hand
+    auto [smallInts, bigInts] = myRandom::generateUniqueIntsPair(6, 36, 4, 0, 166, 12);
+
+    // Randomly determine win/loss for the different teams
+    bool firstSetWin = myRandom::getRandomBool();
+    bool secondSetWin = !firstSetWin;
+
+    // Used in assigning the first user to bsawatestuser#test
+    bool isFirstIteration = true;
+
+    // Create a team state so as TeamADeaths = TeamBKills and viceversa;
+    const int totalDeathsA = smallInts.back();
+    smallInts.pop_back();
+    const int totalDeathsB = smallInts.back();
+    smallInts.pop_back();
+    const int totalKillsA = totalDeathsB;
+    const int totalKillsB = totalDeathsA;
+
+    // Create arrays with values for deaths and kills which will be used to distribute stats in the `for loop` to each player;
+    std::array<int, 5> deathsDistA = myRandom::distributeTotal(totalDeathsA);
+    std::array<int, 5> killsDistB = deathsDistA;
+    std::array<int, 5> deathsDistB = myRandom::distributeTotal(totalDeathsB);
+    std::array<int, 5> killsDistA = deathsDistB;
+
+    // Map each role string to a pointer corresponding to its item set map;
+    std::unordered_map<std::string, const std::unordered_map<int, std::string> *> itemSets = {
+        {"Mage", &mapping::MAGE_ITEMS},
+        {"Bruiser", &mapping::BRUISER_ITEMS},
+        {"Assassin", &mapping::ASSASSIN_ITEMS},
+        {"Marksman", &mapping::MARKSMAN_ITEMS},
+        {"Tank", &mapping::TANK_ITEMS},
+        {"Support", &mapping::SUPPORT_ITEMS}};
 
     // Levels and exp
     constexpr int XP_FOR_LEVEL[19] = {
@@ -123,17 +129,11 @@ nlohmann::json matchBuilder::randomMatch()
         17960  // level 18 (min xp at 18);
     };
 
-    // Determine what champions will play before assigning them to players;
-    std::vector<int> uniqueChamps = myRandom::generateUniqueInts(0, 166, 10);
-
     // Generate team IDs once to avoid segmentation faults due to inconsistent team assignments
-    const int teamID = myRandom::generateRandomInt(0, 200);
-    int secondTeamID = myRandom::generateRandomInt(0, 200);
-    // Ensure team IDs are different
-    while (secondTeamID == teamID)
-    {
-        secondTeamID = myRandom::generateRandomInt(0, 200);
-    }
+    const int teamID = bigInts.back();
+    bigInts.pop_back();
+    int secondTeamID = bigInts.back();
+    bigInts.pop_back();
 
     int participantIndex = 0;
     for (auto &participant : matchTemplate.info.participants)
@@ -154,34 +154,11 @@ nlohmann::json matchBuilder::randomMatch()
         };
 
         // Use an integer from champion vector to get an ID;
-        participant.championId = getChampionIdByIndex(uniqueChamps.back());
+        participant.championId = getChampionIdByIndex(bigInts.back());
         // Remove the used value;
-        uniqueChamps.pop_back();
+        bigInts.pop_back();
         participant.championName = mapping::CHAMPIONS.at(participant.championId).name;
         std::string role = mapping::CHAMPIONS.at(participant.championId).role;
-        GamePhase phase = getGamePhase(duration);
-
-        participant.totalDamageDealtToChampions = myRandom::generateRandomInt(0, duration * 750 / 60); // DPM between 622 in Pro play to 750 in ranked;
-        if (role != "Support")
-        {
-            participant.totalMinionsKilled = myRandom::generateRandomInt(0, duration * 10 / 60); // 11/12 cs/m ceiling on minion waves;
-            participant.totalAllyJungleMinionsKilled = myRandom::generateRandomInt(0, duration * 3 / 60);
-            participant.totalEnemyJungleMinionsKilled = myRandom::generateRandomInt(0, duration * 3 / 60);
-        }
-        else
-        {
-            participant.totalMinionsKilled = myRandom::generateRandomInt(0, duration * 3 / 60); // 11/12 cs/m ceiling on minion waves;
-            participant.totalAllyJungleMinionsKilled = myRandom::generateRandomInt(0, duration * 1 / 60);
-            participant.totalEnemyJungleMinionsKilled = myRandom::generateRandomInt(0, duration * 1 / 60);
-        }
-
-        const int minions = participant.totalMinionsKilled;
-        const int jglCamps = participant.totalAllyJungleMinionsKilled + participant.totalEnemyJungleMinionsKilled;
-        const int goldKills = participant.kills * 300;   // Base value, not considering shutdowns and devaluation implemented in later patches;
-        const int goldAssist = participant.assists * 50; // Also not counting plates or obectives for now;
-        const int totalGold = goldKills + goldAssist + goldPerSec + minions + jglCamps;
-        participant.goldEarned = totalGold;
-
         /**
         ** Dereference the pointer to get the item set associated with the role,
         ** use find() and a fallback instead of operator[] which would insert a null
@@ -199,6 +176,60 @@ nlohmann::json matchBuilder::randomMatch()
             itemSetPtr = &mapping::COMPONENTS;
         }
         const auto &itemSet = *itemSetPtr;
+
+        // DPM between 622 in Pro play to 750 in ranked;
+        if (role != "Support")
+        {
+            participant.totalMinionsKilled = myRandom::generateRandomInt(0, duration * 10 / 60);
+            // 11/12 cs/m ceiling on minion waves;
+            participant.totalAllyJungleMinionsKilled = myRandom::generateRandomInt(0, duration * 3 / 60);
+            participant.totalEnemyJungleMinionsKilled = myRandom::generateRandomInt(0, duration * 3 / 60);
+        }
+        else
+        {
+            participant.totalMinionsKilled = myRandom::generateRandomInt(0, duration * 3 / 60); // 11/12 cs/m ceiling on minion waves;
+            participant.totalAllyJungleMinionsKilled = myRandom::generateRandomInt(0, duration * 1 / 60);
+            participant.totalEnemyJungleMinionsKilled = myRandom::generateRandomInt(0, duration * 1 / 60);
+        }
+
+        const int minions = participant.totalMinionsKilled;
+        const int jglCamps = participant.totalAllyJungleMinionsKilled + participant.totalEnemyJungleMinionsKilled;
+        const int goldKills = participant.kills * 300;   // Base value, not considering shutdowns and devaluation implemented in later patches;
+        const int goldAssist = participant.assists * 50; // Also not counting plates or obectives for now;
+        const int totalGold = goldKills + goldAssist + goldPerSec + minions + jglCamps;
+        participant.goldEarned = totalGold;
+
+        const int experienceKills = participant.kills * 300;
+        const int experienceAssists = participant.assists * 410;
+        const int experienceFarm = minions * 60 + jglCamps * 120;
+
+        if (role == "Support")
+        {
+            const int experienceAssists = participant.assists * 800;
+            const int experienceFarm = minions * 80 + jglCamps * 150;
+        }
+
+        if (participant.item6 == 3513)
+        {
+            int experienceFarm = minions * 60 + jglCamps * 120 + 300;
+        };
+
+        const int totalExperience = experienceKills + experienceAssists + experienceFarm;
+        const int cappedExperience = std::min(totalExperience, XP_FOR_LEVEL[19]);
+
+        participant.champExperience = cappedExperience;
+
+        int level = 1;
+        for (int lvl = 18; lvl >= 1; --lvl)
+        {
+            if (totalExperience >= XP_FOR_LEVEL[lvl])
+            {
+                level = lvl;
+                break;
+            }
+        }
+
+        participant.champLevel = level;
 
         // Set the trinket or special but no herald after min 20;
         int item6;
@@ -281,44 +312,17 @@ nlohmann::json matchBuilder::randomMatch()
                 *(&participant.item1 + i) = items[i];
             }
         }
-        const int experienceKills = participant.kills * 300;
-        const int experienceAssists = participant.assists * 410;
-        const int experienceFarm = minions * 60 + jglCamps * 120;
 
-        if (role == "Support")
-        {
-            const int experienceAssists = participant.assists * 800;
-            const int experienceFarm = minions * 80 + jglCamps * 150;
-        }
-
-        if (participant.item6 == 3513)
-        {
-            int experienceFarm = minions * 60 + jglCamps * 120 + 300;
-        };
-
-        const int totalExperience = experienceKills + experienceAssists + experienceFarm;
-        const int cappedExperience = std::min(totalExperience, XP_FOR_LEVEL[19]);
-
-        participant.champExperience = cappedExperience;
-
-        int level = 1;
-        for (int lvl = 18; lvl >= 1; --lvl)
-        {
-            if (totalExperience >= XP_FOR_LEVEL[lvl])
-            {
-                level = lvl;
-                break;
-            }
-        }
-
-        participant.champLevel = level;
-        participant.summoner1Id = myRandom::generateRandomInt(6, 36);
+        participant.summoner1Id = smallInts.back();
+        smallInts.pop_back();
 
         participant.perks.Primary = myRandom::getRandomKeyCached(mapping::KEYSTONES);
         participant.perks.Secondary = myRandom::getRandomKeyCached(mapping::SECONDARY_RUNES);
         // Assign pre-generated team IDs to participants
         participant.teamId = (participantIndex < 5) ? teamID : secondTeamID;
-        participant.visionScore = myRandom::generateRandomInt(0, 50);
+        participant.visionScore = smallInts.back();
+        smallInts.pop_back();
+
         // Win/loss and team
         participant.win = (participantIndex < 5) ? firstSetWin : secondSetWin;
 
