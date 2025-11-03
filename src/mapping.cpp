@@ -341,7 +341,7 @@ namespace mapping
         {31, {"Chogath", "Tank"}},
         {42, {"Corki", "Marksman"}},
         {122, {"Darius", "Fighter"}},
-        {131, {"Diana", "Assassin"}},
+        {131, {"Diana", "Mage"}},
         {119, {"Draven", "Marksman"}},
         {36, {"DrMundo", "Tank"}},
         {245, {"Ekko", "Assassin"}},

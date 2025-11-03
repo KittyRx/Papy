@@ -66,9 +66,9 @@ nlohmann::json matchBuilder::randomMatch()
 
     // Create vectors with values for deaths and kills which will be used to distribute stats in the `for loop` to each player;
     std::vector<int> deathsDistA = myRandom::distributeTotal(totalDeathsA, 5);
-    std::vector<int> killsDistA = myRandom::distributeTotal(totalKillsA, 5);
+    std::vector<int> killsDistB = deathsDistA; // Team B kills = Team A deaths
     std::vector<int> deathsDistB = myRandom::distributeTotal(totalDeathsB, 5);
-    std::vector<int> killsDistB = myRandom::distributeTotal(totalKillsB, 5);
+    std::vector<int> killsDistA = deathsDistB; // Team A kills = Team B deaths
 
     // Map each role string to a pointer corresponding to its item set map;
     std::unordered_map<std::string, const std::unordered_map<int, std::string> *> itemSets = {
@@ -104,7 +104,8 @@ nlohmann::json matchBuilder::randomMatch()
     const int teamID = myRandom::generateRandomInt(0, 200);
     int secondTeamID = myRandom::generateRandomInt(0, 200);
     // Ensure team IDs are different
-    while (secondTeamID == teamID) {
+    while (secondTeamID == teamID)
+    {
         secondTeamID = myRandom::generateRandomInt(0, 200);
     }
 
@@ -126,10 +127,10 @@ nlohmann::json matchBuilder::randomMatch()
             participant.assists = myRandom::generateRandomInt(0, totalKillsB);
         };
 
-        participant.totalDamageDealtToChampions = myRandom::generateRandomInt(0, duration * 750); // DPM between 622 in Pro play to 750 in ranked;
-        participant.totalMinionsKilled = myRandom::generateRandomInt(0, duration * 11);           // 11/12 cs/m ceiling on minion waves;
-        participant.totalAllyJungleMinionsKilled = myRandom::generateRandomInt(0, duration * 6);
-        participant.totalEnemyJungleMinionsKilled = myRandom::generateRandomInt(0, duration * 6);
+        participant.totalDamageDealtToChampions = myRandom::generateRandomInt(0, duration * 750 / 60); // DPM between 622 in Pro play to 750 in ranked;
+        participant.totalMinionsKilled = myRandom::generateRandomInt(0, duration * 10 / 60);           // 11/12 cs/m ceiling on minion waves;
+        participant.totalAllyJungleMinionsKilled = myRandom::generateRandomInt(0, duration * 6 / 60);
+        participant.totalEnemyJungleMinionsKilled = myRandom::generateRandomInt(0, duration * 6 / 60);
 
         const int minions = participant.totalMinionsKilled;
         const int jglCamps = participant.totalAllyJungleMinionsKilled + participant.totalEnemyJungleMinionsKilled;
@@ -158,8 +159,24 @@ nlohmann::json matchBuilder::randomMatch()
         }
         const auto &itemSet = *itemSetPtr;
 
-        // Set the trinket or special;
-        participant.item6 = myRandom::getRandomKeyCached(mapping::SPECIAL_ITEMS);
+        // Set the trinket or special but no herald after min 20;
+        int item6;
+        if (duration <= 1200)
+        {
+            item6 = myRandom::getRandomKeyCached(mapping::SPECIAL_ITEMS);
+        }
+        else
+        {
+            std::unordered_map<int, std::string> filteredSpecials;
+            for (const auto &[id, name] : mapping::SPECIAL_ITEMS)
+            {
+                if (id != 3513)
+                    filteredSpecials[id] = name;
+            }
+            item6 = myRandom::getRandomKeyCached(filteredSpecials);
+        }
+        participant.item6 = item6;
+
         // Give random consumables pre 20m;
         std::vector<int> items = myRandom::getRandomKeysCached(mapping::CONSUMABLES, 2);
         for (int i = 0; i < 2; ++i)
@@ -212,7 +229,7 @@ nlohmann::json matchBuilder::randomMatch()
                 *(&participant.item4 + i) = finished_items[i];
             }
         }
-        else if (role != "Support" && phase == GamePhase::LATE)
+        else if (role != "Support" && (phase == GamePhase::LATE || phase == GamePhase::VERY_LATE))
         {
             participant.item0 = myRandom::getRandomKeyCached(mapping::BOOTS);
 
@@ -278,8 +295,8 @@ nlohmann::json matchBuilder::randomMatch()
         // Win/loss and team
         participant.win = (participantIndex < 5) ? firstSetWin : secondSetWin;
 
-    // (removed duplicated generation of team IDs here - team IDs were
-    // pre-generated outside the loop to ensure consistent assignment)
+        // (removed duplicated generation of team IDs here - team IDs were
+        // pre-generated outside the loop to ensure consistent assignment)
 
         // Riot IDs and summoner name
         if (isFirstIteration)
